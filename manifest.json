@@ -1,7 +1,7 @@
 {
   "name": "Lịch âm dương",
   "short_name": "App",
-  "start_url": "/index.html",
+  "start_url": "/lichvannang",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff"
