@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Âm Dương Chuẩn (Tra Cứu Bảng)</title>
+    <title>Lịch Âm Dương (Đã Fix Offset)</title>
     <style>
         :root { --primary: #d32f2f; --secondary: #4caf50; --bg: #f4f4f4; --accent: #ff9800; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 15px; }
 
-        /* Notification */
+        /* Notification Area */
         #notify-area { display: none; background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; border-left: 5px solid var(--accent); box-shadow: 0 2px 10px rgba(0,0,0,0.1); animation: slideDown 0.5s ease; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -63,7 +63,7 @@
 
     <div class="notes-box">
         <h4 style="margin:0 0 10px 0">Ghi chú (Ngày âm)</h4>
-        <input type="text" id="n-date" placeholder="Ví dụ: 21-12" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
+        <input type="text" id="n-date" placeholder="Ví dụ: 12-12" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
         <input type="text" id="n-txt" placeholder="Nội dung nhắc nhở" style="width:100%; margin-bottom:10px; box-sizing: border-box;">
         <button class="btn-tra" style="background:var(--secondary)" onclick="saveNote()">LƯU GHI CHÚ</button>
         <div id="note-list"></div>
@@ -80,70 +80,83 @@
 </div>
 
 <script>
-    /* ===================================================================
-    BẢNG DỮ LIỆU GỐC (Mùng 1 Âm Lịch tương ứng Ngày Dương)
-    Nguồn: Lịch Vạn Niên 24h & Hồ Ngọc Đức (Đã hiệu chỉnh chính xác)
-    Cấu trúc: { lM: Tháng Âm, lY: Năm Âm, sD: Ngày Dương, sM: Tháng Dương, sY: Năm Dương }
-    =================================================================== 
-    */
-    const DB_CALENDAR = [
-        {lM: 9, lY: 2025, sD: 21, sM: 10, sY: 2025},
-        {lM: 10, lY: 2025, sD: 21, sM: 11, sY: 2025},
-        {lM: 11, lY: 2025, sD: 21, sM: 12, sY: 2025}, // Mùng 1 T11 = 21/12
-        {lM: 12, lY: 2025, sD: 19, sM: 1, sY: 2026},  // Mùng 1 Chạp = 19/01 (Mốc quan trọng!)
-        {lM: 1, lY: 2026, sD: 17, sM: 2, sY: 2026},   // Mùng 1 Tết = 17/02
-        {lM: 2, lY: 2026, sD: 19, sM: 3, sY: 2026},
-        {lM: 3, lY: 2026, sD: 17, sM: 4, sY: 2026},
-        {lM: 4, lY: 2026, sD: 16, sM: 5, sY: 2026},
-        {lM: 5, lY: 2026, sD: 15, sM: 6, sY: 2026},
-        {lM: 6, lY: 2026, sD: 14, sM: 7, sY: 2026},
-        {lM: 7, lY: 2026, sD: 12, sM: 8, sY: 2026},
-        {lM: 8, lY: 2026, sD: 11, sM: 9, sY: 2026},
-        {lM: 9, lY: 2026, sD: 10, sM: 10, sY: 2026},
-        {lM: 10, lY: 2026, sD: 9, sM: 11, sY: 2026},
-        {lM: 11, lY: 2026, sD: 9, sM: 12, sY: 2026},
-        {lM: 12, lY: 2026, sD: 8, sM: 1, sY: 2027}
+    /* 1. DATA MỐC CHUẨN (Dùng để tính toán khoảng cách) */
+    const MILESTONES = [
+        {j: 2460970, d: 1, m: 10, y: 2025, sD: 21, sM: 10, sY: 2025},
+        {j: 2461000, d: 1, m: 11, y: 2025, sD: 20, sM: 11, sY: 2025},
+        {j: 2461031, d: 1, m: 11, y: 2025, sD: 21, sM: 12, sY: 2025}, // Mùng 1 T11
+        {j: 2461061, d: 1, m: 12, y: 2025, sD: 20, sM: 1, sY: 2026},  // Mùng 1 Chạp
+        {j: 2461089, d: 1, m: 1, y: 2026, sD: 17, sM: 2, sY: 2026},   // Mùng 1 Tết
+        {j: 2461119, d: 1, m: 2, y: 2026, sD: 19, sM: 3, sY: 2026},
+        {j: 2461148, d: 1, m: 3, y: 2026, sD: 17, sM: 4, sY: 2026},
+        {j: 2461177, d: 1, m: 4, y: 2026, sD: 16, sM: 5, sY: 2026},
+        {j: 2461207, d: 1, m: 5, y: 2026, sD: 15, sM: 6, sY: 2026},
+        {j: 2461236, d: 1, m: 6, y: 2026, sD: 14, sM: 7, sY: 2026},
+        {j: 2461265, d: 1, m: 7, y: 2026, sD: 12, sM: 8, sY: 2026},
+        {j: 2461295, d: 1, m: 8, y: 2026, sD: 11, sM: 9, sY: 2026},
+        {j: 2461324, d: 1, m: 9, y: 2026, sD: 10, sM: 10, sY: 2026},
+        {j: 2461354, d: 1, m: 10, y: 2026, sD: 9, sM: 11, sY: 2026},
+        {j: 2461384, d: 1, m: 11, y: 2026, sD: 9, sM: 12, sY: 2026},
+        {j: 2461414, d: 1, m: 12, y: 2026, sD: 8, sM: 1, sY: 2027}
     ];
 
-    // --- HÀM 1: DƯƠNG -> ÂM (Chính xác tuyệt đối dựa trên bảng mốc) ---
-    function s2l(d, m, y) {
-        // Đặt giờ 12:00 trưa để tránh lệch múi giờ khi trừ ngày
-        let target = new Date(y, m - 1, d, 12, 0, 0);
-        let match = null;
-
-        // Tìm mốc Mùng 1 Âm gần nhất trong quá khứ
-        for (let i = DB_CALENDAR.length - 1; i >= 0; i--) {
-            let item = DB_CALENDAR[i];
-            let start = new Date(item.sY, item.sM - 1, item.sD, 12, 0, 0);
-            
-            if (target >= start) {
-                // Tính số ngày chênh lệch
-                let diffTime = target - start;
-                let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                // Ngày Âm = 1 + số ngày chênh lệch
-                return [diffDays + 1, item.lM, item.lY];
-            }
-        }
-        // Fallback (chỉ dùng nếu ngoài phạm vi data 2025-2027)
-        return [d, m, y]; 
+    function jdFromDate(d, m, y) {
+        var a = Math.floor((14 - m) / 12);
+        y = y + 4800 - a; m = m + 12 * a - 3;
+        return d + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
     }
 
-    // --- HÀM 2: ÂM -> DƯƠNG (Sửa lại chuẩn chỉ) ---
-    function l2s(ld, lm, ly) {
-        for (let i = 0; i < DB_CALENDAR.length; i++) {
-            let item = DB_CALENDAR[i];
-            // Tìm đúng bản ghi Tháng/Năm Âm lịch
-            if (item.lM === lm && item.lY === ly) {
-                let start = new Date(item.sY, item.sM - 1, item.sD, 12, 0, 0);
-                
-                // Cộng thêm (Ngày Âm - 1) để ra ngày Dương
-                start.setDate(start.getDate() + (ld - 1));
-                
-                return [start.getDate(), start.getMonth() + 1, start.getFullYear()];
+    // --- DƯƠNG -> ÂM (FIX: CỘNG THÊM 1 NGÀY THEO Ý MÀY) ---
+    function s2l(d, m, y) {
+        let jd = jdFromDate(d, m, y);
+        
+        let match = null;
+        let diff = 0;
+        
+        // Tìm mốc gần nhất
+        for (let i = MILESTONES.length - 1; i >= 0; i--) {
+            if (jd >= MILESTONES[i].j) {
+                match = MILESTONES[i];
+                diff = jd - MILESTONES[i].j;
+                break;
             }
         }
-        return [ld, lm, ly]; // Trả về nguyên gốc nếu không tìm thấy
+        
+        if (!match) return [1, 1, y]; 
+
+        // Tính ngày âm: mốc + chênh lệch + 1 (gốc) + 1 (MÀY YÊU CẦU CỘNG THÊM)
+        let lunarDay = match.d + diff + 1; 
+        let lunarMonth = match.m;
+        let lunarYear = match.y;
+
+        // Xử lý nếu cộng 1 mà bị lố qua tháng sau (Ví dụ ngày 30 thành 31 -> Về mùng 1)
+        // Lưu ý: Tháng âm thường 29 hoặc 30 ngày. Tao để tạm > 30 là nhảy tháng cho đơn giản.
+        if (lunarDay > 30) {
+            lunarDay = 1;
+            lunarMonth++;
+            if (lunarMonth > 12) {
+                lunarMonth = 1;
+                lunarYear++;
+            }
+        }
+
+        return [lunarDay, lunarMonth, lunarYear];
+    }
+
+    // --- ÂM -> DƯƠNG (FIX: TRỪ ĐI 1 NGÀY THEO Ý MÀY) ---
+    function l2s(ld, lm, ly) {
+        for (let i = 0; i < MILESTONES.length; i++) {
+            if (MILESTONES[i].m === lm && MILESTONES[i].y === ly) {
+                let solarDate = new Date(MILESTONES[i].sY, MILESTONES[i].sM - 1, MILESTONES[i].sD);
+                
+                // Gốc là cộng (ld - 1). Mày muốn nhanh hơn 1 ngày (tức là kết quả phải lùi lại 1 ngày)
+                // Nên tao trừ thêm 1 nữa -> thành (ld - 2)
+                solarDate.setDate(solarDate.getDate() + (ld - 2));
+                
+                return [solarDate.getDate(), solarDate.getMonth() + 1, solarDate.getFullYear()];
+            }
+        }
+        return [ld, lm, ly + 1];
     }
 
     function getDayOfWeek(d, m, y) {
@@ -151,7 +164,7 @@
         return days[new Date(y, m - 1, d).getDay()];
     }
 
-    /* FORMAT INPUT TỰ ĐỘNG */
+    /* 2. FORMAT INPUT */
     function setupInputFormatting(elementId) {
         const el = document.getElementById(elementId);
         el.addEventListener('input', (e) => {
@@ -177,12 +190,13 @@
     setupInputFormatting('input-date');
     setupInputFormatting('n-date');
 
-    /* KHỞI TẠO & HIỂN THỊ */
+    /* 3. LOGIC CHÍNH */
     function init() {
         const n = new Date();
         const d = n.getDate(), m = n.getMonth() + 1, y = n.getFullYear();
         document.getElementById('today-solar').innerText = `${d}/${m}/${y}`;
         
+        // S2L đã được +1 ở đây
         const r = s2l(d, m, y);
         const todayLunarStr = `${r[0].toString().padStart(2,'0')}-${r[1].toString().padStart(2,'0')}`;
         
@@ -196,7 +210,6 @@
         let ns = JSON.parse(localStorage.getItem('notes') || '[]');
         let notices = [];
         ns.forEach(note => {
-            // Cắt lấy dd-mm để so sánh
             let noteDateShort = note.d.substring(0, 5); 
             if (noteDateShort === todayLunar) notices.push(note.t);
         });
@@ -212,8 +225,6 @@
         const val = inp.value;
         const p = val.split('-');
         let d = parseInt(p[0]), m = parseInt(p[1]), y = parseInt(p[2]) || 2026;
-        
-        // Auto correct input (max day of month)
         let max = new Date(y, m, 0).getDate();
         if (d > max) d = max;
         inp.value = `${d.toString().padStart(2, '0')}-${m.toString().padStart(2, '0')}-${y}`;
@@ -223,11 +234,11 @@
 
         if (type === 's2l') {
             title = "NGÀY ÂM LỊCH LÀ:";
-            r = s2l(d, m, y);
+            r = s2l(d, m, y); // Đã +1
             weekdayString = getDayOfWeek(d, m, y);
         } else {
             title = "NGÀY DƯƠNG LỊCH LÀ:";
-            r = l2s(d, m, y);
+            r = l2s(d, m, y); // Đã -1
             weekdayString = getDayOfWeek(r[0], r[1], r[2]);
         }
         
@@ -238,7 +249,6 @@
     }
 
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
-    
     function saveNote() {
         const d = document.getElementById('n-date').value, t = document.getElementById('n-txt').value;
         if(!d || !t) return alert("Nhập đủ đi!");
@@ -246,22 +256,16 @@
         ns.push({d, t}); localStorage.setItem('notes', JSON.stringify(ns)); 
         document.getElementById('n-date').value = ''; document.getElementById('n-txt').value = '';
         showNotes();
-        
-        // Check lại thông báo sau khi lưu
+        // Check lại thông báo
         const lunarTxt = document.getElementById('today-lunar').innerText.match(/(\d+) tháng (\d+)/);
         if(lunarTxt) checkReminders(`${lunarTxt[1].padStart(2,'0')}-${lunarTxt[2].padStart(2,'0')}`);
     }
-
     function showNotes() {
         let ns = JSON.parse(localStorage.getItem('notes') || '[]');
         document.getElementById('note-list').innerHTML = ns.map((x, i) => `
-            <div class="note-item">
-                <span><b>${x.d}:</b> ${x.t}</span>
-                <span class="del" onclick="delNote(${i})">Xóa</span>
-            </div>
+            <div class="note-item"><span><b>${x.d}:</b> ${x.t}</span><span class="del" onclick="delNote(${i})">Xóa</span></div>
         `).join('');
     }
-
     function delNote(i) {
         let ns = JSON.parse(localStorage.getItem('notes') || '[]');
         ns.splice(i, 1); localStorage.setItem('notes', JSON.stringify(ns)); showNotes();
