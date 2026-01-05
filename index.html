@@ -296,7 +296,7 @@
     <meta name="apple-mobile-web-app-title" content="Lịch âm dương">
     <link rel="apple-touch-icon" href="ava.png">
     <link rel="manifest" href="manifest.json">
-  <title>Lịch Âm Dương - Tra cứu & Ghi chú (v2)</title>
+  <title>Lịch Âm Dương - Tra cứu & Ghi chú (v3)</title>
   <style>
     :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#60a5fa}
     *{box-sizing:border-box}
@@ -323,8 +323,8 @@
 <body>
   <div class="app">
     <header>
-      <h1>Lịch Âm Dương — Tra cứu & Ghi chú (v2)</h1>
-      <div class="muted">Tương thích điện thoại • Dấu "/" tự hiển thị trong ô ngày</div>
+      <h1>Lịch Âm Dương — Tra cứu & Ghi chú (v3)</h1>
+      <div class="muted">Tương thích điện thoại • Dấu "/" tự hiển thị trong ô ngày • Ghi chú dùng cùng định dạng</div>
     </header>
 
     <section class="card" id="todayCard">
@@ -349,7 +349,7 @@
       <div style="margin-top:12px" id="converter">
         <div data-panel="s2l">
           <div class="row" style="gap:10px;align-items:center">
-            <input type="text" id="solarInput" placeholder="dd/mm/yyyy (vd: 07/01/2026)" />
+            <input type="text" id="solarInput" placeholder="dd/mm/yyyy (vd: 07/01/2026)" inputmode="numeric" />
             <button id="toLunar">Tra cứu</button>
           </div>
           <div style="margin-top:12px"><div class="muted">Kết quả:</div><div id="s2lResult" style="margin-top:8px"></div></div>
@@ -357,7 +357,7 @@
 
         <div data-panel="l2s" style="display:none">
           <div class="row" style="gap:8px;align-items:center">
-            <input type="text" id="lunarInput" placeholder="dd/mm/yyyy (âm)" />
+            <input type="text" id="lunarInput" placeholder="dd/mm/yyyy (âm)" inputmode="numeric" />
             <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="isLeap"/>Nhuận</label>
             <button id="toSolar">Tra cứu</button>
           </div>
@@ -369,9 +369,9 @@
     <section class="card">
       <div class="row" style="justify-content:space-between;align-items:flex-start">
         <div style="flex:1">
-          <div class="muted">Ghi chú cho ngày âm (vd 12-12 âm — ghi lặp hằng năm nếu muốn)</div>
+          <div class="muted">Ghi chú cho ngày âm (vd 12/12 âm — ghi lặp hằng năm nếu muốn)</div>
           <div style="margin-top:8px" class="row">
-            <input type="text" id="noteLunarDay" placeholder="dd-mm (âm)" style="width:150px" />
+            <input type="text" id="noteLunarDay" placeholder="dd/mm (âm)" style="width:150px" inputmode="numeric" />
             <input type="text" id="noteLunarYear" placeholder="(tùy chọn yyyy)" style="width:120px" />
             <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="repeatAnnually"/>Lặp hàng năm</label>
           </div>
@@ -396,7 +396,50 @@
   function getLunarMonth11(yy, timeZone) { var off = jdFromDate(31, 12, yy) - 2415021; var k = Math.floor(off / 29.530588853); var nm = getNewMoonDay(k, timeZone); var sunLong = getSunLongitude(nm, timeZone); if (sunLong >= 9) nm = getNewMoonDay(k - 1, timeZone); return nm; }
   function getLeapMonthOffset(a11, timeZone) { var k = Math.floor((a11 - 2415021.076998695) / 29.530588853 + 0.5); var last = 0; var i = 1; var arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone); do { last = arc; i++; arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone); } while (arc !== last && i < 14); return i - 1; }
   function convertSolar2Lunar(dd, mm, yy, timeZone) { var dayNumber = jdFromDate(dd, mm, yy); var k = Math.floor((dayNumber - 2415021.076998695) / 29.530588853); var monthStart = getNewMoonDay(k + 1, timeZone); if (monthStart > dayNumber) { monthStart = getNewMoonDay(k, timeZone); } var a11 = getLunarMonth11(yy, timeZone); var b11 = a11; var lunarYear; if (a11 >= monthStart) { lunarYear = yy; a11 = getLunarMonth11(yy - 1, timeZone); } else { lunarYear = yy + 1; b11 = getLunarMonth11(yy + 1, timeZone); } var lunarDay = dayNumber - monthStart + 1; var diff = Math.floor((monthStart - a11) / 29); var lunarMonth = diff + 11; var lunarLeap = 0; if (b11 - a11 > 365) { var leapMonthDiff = getLeapMonthOffset(a11, timeZone); if (diff >= leapMonthDiff) { lunarMonth = diff + 10; if (diff === leapMonthDiff) lunarLeap = 1; } } if (lunarMonth > 12) lunarMonth -= 12; if (lunarMonth >= 11 && diff < 4) lunarYear -= 1; return {day: lunarDay, month: lunarMonth, year: lunarYear, leap: lunarLeap}; }
-  function convertLunar2Solar(lunarDay, lunarMonth, lunarYear, lunarLeap, timeZone) { var a11 = getLunarMonth11(lunarYear, timeZone); var b11 = getLunarMonth11(lunarYear + 1, timeZone); var off = lunarMonth - 11; if (off < 0) off += 12; var k = Math.floor(0.5 + (a11 - 2415021.076998695) / 29.530588853); var monthStart = getNewMoonDay(k + off, timeZone); if (b11 - a11 > 365) { var leapOff = getLeapMonthOffset(a11, timeZone); var leapMonth = leapOff - 2; if (leapMonth < 0) leapMonth += 12; if (lunarLeap !== 0 && lunarMonth !== leapMonth) return null; if (lunarLeap !== 0 || off >= leapOff) monthStart = getNewMoonDay(k + off + 1, timeZone); } var jd = monthStart + lunarDay - 1; return jdToDate(jd); }
+  function convertLunar2Solar(lunarDay, lunarMonth, lunarYear, lunarLeap, timeZone) {
+    // First attempt: use algorithmic method
+    try {
+      var a11 = getLunarMonth11(lunarYear, timeZone);
+      var b11 = getLunarMonth11(lunarYear + 1, timeZone);
+      var off = lunarMonth - 11;
+      if (off < 0) off += 12;
+      var k = Math.floor(0.5 + (a11 - 2415021.076998695) / 29.530588853);
+      var monthStart = getNewMoonDay(k + off, timeZone);
+      if (b11 - a11 > 365) {
+        var leapOff = getLeapMonthOffset(a11, timeZone);
+        var leapMonth = leapOff - 2;
+        if (leapMonth < 0) leapMonth += 12;
+        if (lunarLeap !== 0 && lunarMonth !== leapMonth) return null; // invalid
+        if (lunarLeap !== 0 || off >= leapOff) monthStart = getNewMoonDay(k + off + 1, timeZone);
+      }
+      var jd = monthStart + lunarDay - 1;
+      var res = jdToDate(jd);
+      // validate result by converting back
+      var back = convertSolar2Lunar(res[0], res[1], res[2], timeZone);
+      if (back && back.day === lunarDay && back.month === lunarMonth && back.year === lunarYear && (back.leap?1:0) === (lunarLeap?1:0)) {
+        return res;
+      }
+    } catch (e) {
+      // fallthrough to search
+    }
+
+    // Fallback: brute-force search over a 3-year window around lunarYear
+    var startYear = lunarYear - 1;
+    var endYear = lunarYear + 1;
+    for (var yy = startYear; yy <= endYear; yy++) {
+      for (var mm = 1; mm <= 12; mm++) {
+        for (var dd = 1; dd <= 31; dd++) {
+          var dt = new Date(yy, mm - 1, dd);
+          if (dt.getFullYear() !== yy || dt.getMonth() + 1 !== mm || dt.getDate() !== dd) continue; // invalid date
+          var lun = convertSolar2Lunar(dd, mm, yy, timeZone);
+          if (lun && lun.day === lunarDay && lun.month === lunarMonth && lun.year === lunarYear && (lun.leap?1:0) === (lunarLeap?1:0)) {
+            return [dd, mm, yy];
+          }
+        }
+      }
+    }
+    return null;
+  }
 
   function pad(n){return n.toString().padStart(2,'0')}
   function fmtSolar(d,m,y){return pad(d) + '-' + pad(m) + '-' + y}
@@ -428,19 +471,25 @@
   // attach auto slash behavior to inputs (real-time show "/")
   const solarInput = document.getElementById('solarInput');
   if (solarInput) {
-    solarInput.addEventListener('input', function (e) {
-      const old = this.value; const digits = old.replace(/\D/g, ''); let res = '';
-      if (digits.length <= 2) res = digits;
-      else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2);
-      else res = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4,8);
-      this.value = res;
-    });
+    solarInput.addEventListener('input', function (e) { const old = this.value; const digits = old.replace(/\D/g, ''); let res = ''; if (digits.length <= 2) res = digits; else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2); else res = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4,8); this.value = res; });
     solarInput.addEventListener('blur', function () { const parts = this.value.split('/'); if (parts[0]) parts[0] = parts[0].padStart(2, '0'); if (parts[1]) parts[1] = parts[1].padStart(2, '0'); if (parts[2]) parts[2] = parts[2].slice(0,4); this.value = parts.filter(Boolean).join('/'); });
   }
   const lunarInput = document.getElementById('lunarInput');
   if (lunarInput) {
     lunarInput.addEventListener('input', function (e) { const old = this.value; const digits = old.replace(/\D/g, ''); let res = ''; if (digits.length <= 2) res = digits; else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2); else res = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4,8); this.value = res; });
     lunarInput.addEventListener('blur', function () { const parts = this.value.split('/'); if (parts[0]) parts[0] = parts[0].padStart(2, '0'); if (parts[1]) parts[1] = parts[1].padStart(2, '0'); if (parts[2]) parts[2] = parts[2].slice(0,4); this.value = parts.filter(Boolean).join('/'); });
+  }
+
+  // note input (dd/mm) behaviour
+  const noteLunarDayInput = document.getElementById('noteLunarDay');
+  if (noteLunarDayInput) {
+    noteLunarDayInput.addEventListener('input', function (e) {
+      const old = this.value; const digits = old.replace(/\D/g, '').slice(0,4); let res = '';
+      if (digits.length <= 2) res = digits;
+      else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2);
+      this.value = res;
+    });
+    noteLunarDayInput.addEventListener('blur', function () { const parts = this.value.split('/'); if (parts[0]) parts[0] = parts[0].padStart(2,'0'); if (parts[1]) parts[1] = parts[1].padStart(2,'0'); this.value = parts.filter(Boolean).join('/'); });
   }
 
   document.getElementById('toLunar').addEventListener('click', ()=>{
@@ -464,15 +513,30 @@
     document.getElementById('l2sResult').textContent = fmtSolar(res[0],res[1],res[2]) + ' • ' + weekdayFromDate(res[0],res[1],res[2]);
   });
 
-  // Notes (unchanged)
+  // Notes storage (localStorage)
   function noteKey(lDay,lMonth,lYear,annual){ if(annual) return `note:L:AN:${pad(lDay)}-${pad(lMonth)}`; if(lYear) return `note:L:${pad(lDay)}-${pad(lMonth)}-${lYear}`; return `note:L:${pad(lDay)}-${pad(lMonth)}`; }
-  function saveNote(){ const dmm = document.getElementById('noteLunarDay').value.trim(); const year = document.getElementById('noteLunarYear').value.trim(); const annual = document.getElementById('repeatAnnually').checked; const txt = document.getElementById('noteText').value.trim(); if(!dmm.match(/^\d{1,2}-\d{1,2}$/)) { alert('Nhập dạng dd-mm (âm)'); return; } const [dd,mm] = dmm.split('-').map(s=>Number(s)); const ky = noteKey(dd,mm, year || null, annual); const payload = {text:txt, day:dd, month:mm, year: year||null, annual:annual, savedAt: new Date().toISOString()}; localStorage.setItem(ky, JSON.stringify(payload)); alert('Đã lưu'); renderAllNotes(); }
+  function saveNote(){
+    const dmm = document.getElementById('noteLunarDay').value.trim();
+    const year = document.getElementById('noteLunarYear').value.trim();
+    const annual = document.getElementById('repeatAnnually').checked;
+    const txt = document.getElementById('noteText').value.trim();
+    const m = dmm.match(/^(\d{1,2})\/(\d{1,2})$/);
+    if(!m){ alert('Nhập dạng dd/mm (âm)'); return; }
+    const dd = Number(m[1]), mm = Number(m[2]);
+    if(dd < 1 || dd > 31 || mm < 1 || mm > 12){ alert('Ngày hoặc tháng không hợp lệ'); return; }
+    const ky = noteKey(dd,mm, year || null, annual);
+    const payload = {text:txt, day:dd, month:mm, year: year||null, annual:annual, savedAt: new Date().toISOString()};
+    localStorage.setItem(ky, JSON.stringify(payload));
+    alert('Đã lưu');
+    renderAllNotes();
+  }
   function loadNoteFor(lunDay, lunMonth, lunYear){ const specific = localStorage.getItem(noteKey(lunDay,lunMonth,lunYear,false)); if(specific) return JSON.parse(specific); const annual = localStorage.getItem(noteKey(lunDay,lunMonth,null,true)); if(annual) return JSON.parse(annual); return null; }
   function renderTodayNotes(lun){ const container = document.getElementById('todayNotes'); container.innerHTML = ''; const note = loadNoteFor(lun.day, lun.month, lun.year); if(note){ const div = document.createElement('div');div.className='note-item';div.textContent = note.text + '\n(' + (note.annual? 'Lặp hàng năm':'Theo năm ' + (note.year||'n/a')) + ')'; container.appendChild(div);} else { container.textContent = 'Chưa có ghi chú cho hôm nay (âm)'; } }
   function renderAllNotes(){ const out = document.getElementById('allNotes'); out.innerHTML=''; for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(!k.startsWith('note:L:')) continue; try { const p = JSON.parse(localStorage.getItem(k)); const div = document.createElement('div'); div.className='note-item'; let title = `${pad(p.day)}-${pad(p.month)}` + (p.year? '-' + p.year : '') + (p.annual? ' (Lặp)':''); div.innerHTML = `<strong>${title}</strong><div style="margin-top:6px">${p.text}</div><div class="muted" style="margin-top:6px;font-size:12px">Lưu: ${new Date(p.savedAt).toLocaleString()}</div><div style="margin-top:8px"><button data-key="${k}" class="del">Xoá</button></div>`; out.appendChild(div);} catch(e){ } } out.querySelectorAll('.del').forEach(b=>b.addEventListener('click', e=>{ const k = e.currentTarget.getAttribute('data-key'); if(confirm('Xoá ghi chú?')){ localStorage.removeItem(k); renderAllNotes(); updateToday(); }})); }
   document.getElementById('saveNote').addEventListener('click', saveNote);
-  document.getElementById('showNotes').addEventListener('click', ()=>{ const dmm = document.getElementById('noteLunarDay').value.trim(); const year = document.getElementById('noteLunarYear').value.trim(); if(!dmm.match(/^\d{1,2}-\d{1,2}$/)) { alert('Nhập dạng dd-mm (âm)'); return; } const [dd,mm] = dmm.split('-').map(s=>Number(s)); const note = loadNoteFor(dd,mm, year || null); if(note) { alert('Ghi chú:\n' + note.text); } else alert('Chưa có ghi chú cho ngày đó'); });
+  document.getElementById('showNotes').addEventListener('click', ()=>{ const dmm = document.getElementById('noteLunarDay').value.trim(); const year = document.getElementById('noteLunarYear').value.trim(); const m = dmm.match(/^(\d{1,2})\/(\d{1,2})$/); if(!m){ alert('Nhập dạng dd/mm (âm)'); return; } const [dd,mm] = [Number(m[1]), Number(m[2])]; const note = loadNoteFor(dd,mm, year || null); if(note) { alert('Ghi chú:\n' + note.text); } else alert('Chưa có ghi chú cho ngày đó'); });
   renderAllNotes();
   </script>
 </body>
 </html>
+
