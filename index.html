@@ -1,315 +1,33 @@
-<!-- <!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <meta name="apple-mobile-web-app-title" content="Lịch âm dương">
-    <link rel="apple-touch-icon" href="ava.png">
-    <link rel="manifest" href="manifest.json">
-
-    <title>Lịch Âm Dương (Đã Fix Offset)</title>
-    <style>
-        :root { --primary: #d32f2f; --secondary: #4caf50; --bg: #f4f4f4; --accent: #ff9800; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 15px; }
-
-        /* Notification Area */
-        #notify-area { display: none; background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; border-left: 5px solid var(--accent); box-shadow: 0 2px 10px rgba(0,0,0,0.1); animation: slideDown 0.5s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Search Box */
-        .search-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
-        .search-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; flex: 1; outline: none; }
-        .btn-tra { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1rem; transition: 0.2s; }
-        .btn-tra:active { transform: scale(0.98); }
-
-        /* Display */
-        .header-main { background: white; padding: 30px 15px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(211, 47, 47, 0.1); }
-        .current-solar { font-size: 3.2rem; font-weight: 800; color: var(--primary); margin: 0; }
-        .current-lunar { font-size: 1.2rem; color: #444; margin-top: 15px; font-weight: 600; background: #fff1f1; padding: 12px; border-radius: 12px; border: 1px dashed var(--primary); }
-
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; animation: pop 0.2s ease-out; }
-        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .m-label { font-size: 0.9rem; color: #777; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
-        .m-result { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; line-height: 1.2; }
-        .m-weekday { font-size: 1.2rem; color: #333; font-weight: 600; margin-bottom: 25px; display: block; }
-        .btn-close { background: #333; color: white; border: none; padding: 12px 0; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
-
-        /* Notes */
-        .notes-box { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .note-item { background: #f9f9f9; padding: 10px; margin-top: 8px; border-radius: 8px; display: flex; justify-content: space-between; border-left: 4px solid var(--secondary); font-size: 0.95rem; align-items: center; }
-        .del { color: #d32f2f; cursor: pointer; font-weight: bold; padding: 5px; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div id="notify-area"></div>
-
-    <div class="search-box">
-        <div class="search-row">
-            <input type="text" id="input-date" placeholder="dd-mm-yyyy" maxlength="10">
-            <select id="search-type">
-                <option value="s2l">Dương → Âm</option>
-                <option value="l2s">Âm → Dương</option>
-            </select>
-        </div>
-        <button class="btn-tra" onclick="doSearch()">TRA KẾT QUẢ</button>
-    </div>
-
-    <div class="header-main">
-        <div id="today-solar" class="current-solar">--/--/----</div>
-        <div id="today-lunar" class="current-lunar">Đang tính...</div>
-    </div>
-
-    <div class="notes-box">
-        <h4 style="margin:0 0 10px 0">Ghi chú (Ngày âm)</h4>
-        <input type="text" id="n-date" placeholder="Ví dụ: 12-12" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
-        <input type="text" id="n-txt" placeholder="Nội dung nhắc nhở" style="width:100%; margin-bottom:10px; box-sizing: border-box;">
-        <button class="btn-tra" style="background:var(--secondary)" onclick="saveNote()">LƯU GHI CHÚ</button>
-        <div id="note-list"></div>
-    </div>
-</div>
-
-<div id="modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="m-label" id="m-title">KẾT QUẢ</div>
-        <div class="m-result" id="m-val">--/--/----</div>
-        <span class="m-weekday" id="m-dow">Thứ...</span>
-        <button class="btn-close" onclick="closeModal()">Đóng</button>
-    </div>
-</div>
-
-<script>
-    /* 1. DATA MỐC CHUẨN (Dùng để tính toán khoảng cách) */
-    const MILESTONES = [
-        {j: 2460970, d: 1, m: 10, y: 2025, sD: 21, sM: 10, sY: 2025},
-        {j: 2461000, d: 1, m: 11, y: 2025, sD: 20, sM: 11, sY: 2025},
-        {j: 2461031, d: 1, m: 11, y: 2025, sD: 21, sM: 12, sY: 2025}, // Mùng 1 T11
-        {j: 2461061, d: 1, m: 12, y: 2025, sD: 20, sM: 1, sY: 2026},  // Mùng 1 Chạp
-        {j: 2461089, d: 1, m: 1, y: 2026, sD: 17, sM: 2, sY: 2026},   // Mùng 1 Tết
-        {j: 2461119, d: 1, m: 2, y: 2026, sD: 19, sM: 3, sY: 2026},
-        {j: 2461148, d: 1, m: 3, y: 2026, sD: 17, sM: 4, sY: 2026},
-        {j: 2461177, d: 1, m: 4, y: 2026, sD: 16, sM: 5, sY: 2026},
-        {j: 2461207, d: 1, m: 5, y: 2026, sD: 15, sM: 6, sY: 2026},
-        {j: 2461236, d: 1, m: 6, y: 2026, sD: 14, sM: 7, sY: 2026},
-        {j: 2461265, d: 1, m: 7, y: 2026, sD: 12, sM: 8, sY: 2026},
-        {j: 2461295, d: 1, m: 8, y: 2026, sD: 11, sM: 9, sY: 2026},
-        {j: 2461324, d: 1, m: 9, y: 2026, sD: 10, sM: 10, sY: 2026},
-        {j: 2461354, d: 1, m: 10, y: 2026, sD: 9, sM: 11, sY: 2026},
-        {j: 2461384, d: 1, m: 11, y: 2026, sD: 9, sM: 12, sY: 2026},
-        {j: 2461414, d: 1, m: 12, y: 2026, sD: 8, sM: 1, sY: 2027}
-    ];
-
-    function jdFromDate(d, m, y) {
-        var a = Math.floor((14 - m) / 12);
-        y = y + 4800 - a; m = m + 12 * a - 3;
-        return d + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
-    }
-
-    // --- DƯƠNG -> ÂM (FIX: CỘNG THÊM 1 NGÀY THEO Ý MÀY) ---
-    function s2l(d, m, y) {
-        let jd = jdFromDate(d, m, y);
-        
-        let match = null;
-        let diff = 0;
-        
-        // Tìm mốc gần nhất
-        for (let i = MILESTONES.length - 1; i >= 0; i--) {
-            if (jd >= MILESTONES[i].j) {
-                match = MILESTONES[i];
-                diff = jd - MILESTONES[i].j;
-                break;
-            }
-        }
-        
-        if (!match) return [1, 1, y]; 
-
-        // Tính ngày âm: mốc + chênh lệch + 1 (gốc) + 1 (MÀY YÊU CẦU CỘNG THÊM)
-        let lunarDay = match.d + diff + 1; 
-        let lunarMonth = match.m;
-        let lunarYear = match.y;
-
-        // Xử lý nếu cộng 1 mà bị lố qua tháng sau (Ví dụ ngày 30 thành 31 -> Về mùng 1)
-        // Lưu ý: Tháng âm thường 29 hoặc 30 ngày. Tao để tạm > 30 là nhảy tháng cho đơn giản.
-        if (lunarDay > 30) {
-            lunarDay = 1;
-            lunarMonth++;
-            if (lunarMonth > 12) {
-                lunarMonth = 1;
-                lunarYear++;
-            }
-        }
-
-        return [lunarDay, lunarMonth, lunarYear];
-    }
-
-    // --- ÂM -> DƯƠNG (FIX: TRỪ ĐI 1 NGÀY THEO Ý MÀY) ---
-    function l2s(ld, lm, ly) {
-        for (let i = 0; i < MILESTONES.length; i++) {
-            if (MILESTONES[i].m === lm && MILESTONES[i].y === ly) {
-                let solarDate = new Date(MILESTONES[i].sY, MILESTONES[i].sM - 1, MILESTONES[i].sD);
-                
-                // Gốc là cộng (ld - 1). Mày muốn nhanh hơn 1 ngày (tức là kết quả phải lùi lại 1 ngày)
-                // Nên tao trừ thêm 1 nữa -> thành (ld - 2)
-                solarDate.setDate(solarDate.getDate() + (ld - 2));
-                
-                return [solarDate.getDate(), solarDate.getMonth() + 1, solarDate.getFullYear()];
-            }
-        }
-        return [ld, lm, ly + 1];
-    }
-
-    function getDayOfWeek(d, m, y) {
-        const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
-        return days[new Date(y, m - 1, d).getDay()];
-    }
-
-    /* 2. FORMAT INPUT */
-    function setupInputFormatting(elementId) {
-        const el = document.getElementById(elementId);
-        el.addEventListener('input', (e) => {
-            if (e.inputType === 'deleteContentBackward') return;
-            let v = e.target.value.replace(/\D/g, '');
-            let final = "";
-            if (v.length >= 1) {
-                let d = v.substring(0, 2);
-                if (d.length === 1 && parseInt(d) > 3) d = '0' + d;
-                else if (d.length === 2 && parseInt(d) > 31) d = '31';
-                final = d;
-            }
-            if (v.length >= 3) {
-                let m = v.substring(2, 4);
-                if (m.length === 1 && parseInt(m) > 1) m = '0' + m;
-                else if (m.length === 2 && parseInt(m) > 12) m = '12';
-                final += '-' + m;
-            }
-            if (v.length >= 5) final += '-' + v.substring(4, 8);
-            e.target.value = final;
-        });
-    }
-    setupInputFormatting('input-date');
-    setupInputFormatting('n-date');
-
-    /* 3. LOGIC CHÍNH */
-    function init() {
-        const n = new Date();
-        const d = n.getDate(), m = n.getMonth() + 1, y = n.getFullYear();
-        document.getElementById('today-solar').innerText = `${d}/${m}/${y}`;
-        
-        // S2L đã được +1 ở đây
-        const r = s2l(d, m, y);
-        const todayLunarStr = `${r[0].toString().padStart(2,'0')}-${r[1].toString().padStart(2,'0')}`;
-        
-        document.getElementById('today-lunar').innerText = `Âm lịch: ${r[0]} tháng ${r[1]}, ${r[2]} (${getDayOfWeek(d, m, y)})`;
-        
-        showNotes();
-        checkReminders(todayLunarStr);
-    }
-
-    function checkReminders(todayLunar) {
-        let ns = JSON.parse(localStorage.getItem('notes') || '[]');
-        let notices = [];
-        ns.forEach(note => {
-            let noteDateShort = note.d.substring(0, 5); 
-            if (noteDateShort === todayLunar) notices.push(note.t);
-        });
-        if (notices.length > 0) {
-            const area = document.getElementById('notify-area');
-            area.style.display = 'block';
-            area.innerHTML = `<strong>🔔 NHẮC NHỞ HÔM NAY (${todayLunar}):</strong><br> - ${notices.join('<br> - ')}`;
-        }
-    }
-
-    function doSearch() {
-        const inp = document.getElementById('input-date');
-        const val = inp.value;
-        const p = val.split('-');
-        let d = parseInt(p[0]), m = parseInt(p[1]), y = parseInt(p[2]) || 2026;
-        let max = new Date(y, m, 0).getDate();
-        if (d > max) d = max;
-        inp.value = `${d.toString().padStart(2, '0')}-${m.toString().padStart(2, '0')}-${y}`;
-
-        const type = document.getElementById('search-type').value;
-        let r, title, weekdayString;
-
-        if (type === 's2l') {
-            title = "NGÀY ÂM LỊCH LÀ:";
-            r = s2l(d, m, y); // Đã +1
-            weekdayString = getDayOfWeek(d, m, y);
-        } else {
-            title = "NGÀY DƯƠNG LỊCH LÀ:";
-            r = l2s(d, m, y); // Đã -1
-            weekdayString = getDayOfWeek(r[0], r[1], r[2]);
-        }
-        
-        document.getElementById('m-title').innerText = title;
-        document.getElementById('m-val').innerText = `${r[0].toString().padStart(2, '0')}-${r[1].toString().padStart(2, '0')}-${r[2]}`;
-        document.getElementById('m-dow').innerText = weekdayString;
-        document.getElementById('modal').style.display = 'flex';
-    }
-
-    function closeModal() { document.getElementById('modal').style.display = 'none'; }
-    function saveNote() {
-        const d = document.getElementById('n-date').value, t = document.getElementById('n-txt').value;
-        if(!d || !t) return alert("Nhập đủ đi!");
-        let ns = JSON.parse(localStorage.getItem('notes') || '[]');
-        ns.push({d, t}); localStorage.setItem('notes', JSON.stringify(ns)); 
-        document.getElementById('n-date').value = ''; document.getElementById('n-txt').value = '';
-        showNotes();
-        // Check lại thông báo
-        const lunarTxt = document.getElementById('today-lunar').innerText.match(/(\d+) tháng (\d+)/);
-        if(lunarTxt) checkReminders(`${lunarTxt[1].padStart(2,'0')}-${lunarTxt[2].padStart(2,'0')}`);
-    }
-    function showNotes() {
-        let ns = JSON.parse(localStorage.getItem('notes') || '[]');
-        document.getElementById('note-list').innerHTML = ns.map((x, i) => `
-            <div class="note-item"><span><b>${x.d}:</b> ${x.t}</span><span class="del" onclick="delNote(${i})">Xóa</span></div>
-        `).join('');
-    }
-    function delNote(i) {
-        let ns = JSON.parse(localStorage.getItem('notes') || '[]');
-        ns.splice(i, 1); localStorage.setItem('notes', JSON.stringify(ns)); showNotes();
-        document.getElementById('notify-area').style.display = 'none';
-    }
-
-    window.onload = init;
-</script>
-</body>
-</html> -->
 <!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-   <meta name="apple-mobile-web-app-capable" content="yes">
 
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Lịch âm dương">
+  <link rel="apple-touch-icon" href="ava.png">
+  <link rel="manifest" href="manifest.json">
 
-    <meta name="apple-mobile-web-app-title" content="Lịch âm dương">
-    <link rel="apple-touch-icon" href="ava.png">
-    <link rel="manifest" href="manifest.json">
-  <title>Lịch Âm Dương - Tra cứu & Ghi chú (v3)</title>
+  <title>Lịch Âm Dương - Tra cứu & Ghi chú (v3 + Firebase Login)</title>
+
   <style>
     :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#60a5fa}
     *{box-sizing:border-box}
     body{font-family:Inter, Roboto, system-ui, -apple-system, 'Segoe UI', sans-serif;margin:0;background:linear-gradient(180deg,#081226 0%, #071827 100%);color:#e6eef8;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px}
     .app{width:100%;max-width:920px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
     header h1{font-size:18px;margin:0}
     .card{background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
     .row{display:flex;gap:12px;align-items:center}
     .col{display:flex;flex-direction:column;gap:10px}
     .big-date{font-size:26px;font-weight:600}
     .lunar-small{font-size:13px;color:var(--muted)}
-    input[type=text], input[type=date], select, textarea{background:transparent;border:1px solid rgba(255,255,255,0.08);padding:10px;border-radius:8px;color:inherit}
+    input[type=text], input[type=password], select, textarea{
+      background:transparent;border:1px solid rgba(255,255,255,0.08);
+      padding:10px;border-radius:8px;color:inherit
+    }
     button{background:var(--accent);border:none;padding:10px 12px;border-radius:8px;color:#022;cursor:pointer;font-weight:600}
     .tabs{display:flex;gap:8px}
     .tab{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.02);cursor:pointer}
@@ -317,14 +35,73 @@
     .note-list{display:flex;flex-direction:column;gap:8px}
     .note-item{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px}
     .muted{color:var(--muted);font-size:13px}
-    @media (max-width:720px){.row{flex-direction:column;align-items:stretch}header{flex-direction:column;align-items:flex-start;gap:8px}.big-date{font-size:22px}}
+
+    /* Auth UI nhỏ gọn */
+    .auth-pill{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .ghost{background:rgba(255,255,255,0.06);color:#e6eef8;border:1px solid rgba(255,255,255,0.08)}
+    .danger{background:rgba(244,63,94,0.18);color:#ffd; border:1px solid rgba(244,63,94,0.25)}
+    .ok{background:rgba(34,197,94,0.18);color:#eafff1;border:1px solid rgba(34,197,94,0.25)}
+
+    /* Modal */
+    .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:9999; padding:18px;}
+    .modal{width:100%; max-width:420px; background:#0b1220; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; box-shadow:0 12px 40px rgba(0,0,0,0.45)}
+    .modal h3{margin:0 0 10px 0; font-size:16px}
+    .modal .muted{margin-bottom:10px}
+    .modal input{width:100%}
+    .actions{display:flex; gap:8px; margin-top:10px}
+    .actions button{flex:1}
+    .close{margin-top:10px; width:100%}
+
+    /* Overlay khóa ghi chú */
+    .lock-wrap{position:relative}
+    .lock-overlay{
+      position:absolute; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background:rgba(2,6,23,0.62);
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(2px);
+      padding:16px;
+      text-align:center;
+    }
+    .lock-overlay .box{
+      max-width:420px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:12px;
+      padding:14px;
+    }
+    .lock-overlay .title{font-weight:700;margin-bottom:6px}
+    .lock-overlay .desc{color:var(--muted);font-size:13px;margin-bottom:10px}
+
+    /* Popup thông báo lỗi (mini modal) */
+    .alert-modal{max-width:380px}
+    .alert-title{font-weight:800;margin:0 0 6px 0}
+    .alert-msg{color:var(--muted);font-size:13px;line-height:1.35;margin:0}
+
+    @media (max-width:720px){
+      .row{flex-direction:column;align-items:stretch}
+      header{flex-direction:column;align-items:flex-start}
+      .big-date{font-size:22px}
+      .auth-pill{justify-content:flex-start}
+    }
   </style>
 </head>
+
 <body>
   <div class="app">
     <header>
-      <h1>Lịch Âm Dương — Tra cứu & Ghi chú (v3)</h1>
-      <div class="muted">Tương thích điện thoại • Dấu "/" tự hiển thị trong ô ngày • Ghi chú dùng cùng định dạng</div>
+      <div>
+        <h1>Lịch Âm Dương — Tra cứu & Ghi chú (v3)</h1>
+        <div class="muted">Tra cứu luôn dùng được • Ghi chú lưu theo tài khoản Firebase</div>
+      </div>
+
+      <div class="auth-pill">
+        <span id="authState" class="muted">Chưa đăng nhập</span>
+        <button id="btnOpenLogin" class="ghost">Đăng nhập</button>
+        <button id="btnLogout" class="danger" style="display:none">Đăng xuất</button>
+      </div>
     </header>
 
     <section class="card" id="todayCard">
@@ -352,7 +129,10 @@
             <input type="text" id="solarInput" placeholder="dd/mm/yyyy (vd: 07/01/2026)" inputmode="numeric" />
             <button id="toLunar">Tra cứu</button>
           </div>
-          <div style="margin-top:12px"><div class="muted">Kết quả:</div><div id="s2lResult" style="margin-top:8px"></div></div>
+          <div style="margin-top:12px">
+            <div class="muted">Kết quả:</div>
+            <div id="s2lResult" style="margin-top:8px"></div>
+          </div>
         </div>
 
         <div data-panel="l2s" style="display:none">
@@ -361,182 +141,630 @@
             <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="isLeap"/>Nhuận</label>
             <button id="toSolar">Tra cứu</button>
           </div>
-          <div style="margin-top:12px"><div class="muted">Kết quả:</div><div id="l2sResult" style="margin-top:8px"></div></div>
+          <div style="margin-top:12px">
+            <div class="muted">Kết quả:</div>
+            <div id="l2sResult" style="margin-top:8px"></div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="card">
+    <section class="card lock-wrap" id="notesCard">
+      <div id="notesLock" class="lock-overlay">
+        <div class="box">
+          <div class="title">🔒 Cần đăng nhập để dùng Ghi chú</div>
+          <div class="desc">Bạn vẫn tra cứu lịch bình thường. Đăng nhập để lưu và xem ghi chú theo tài khoản.</div>
+          <button id="btnOpenLogin2" class="ghost">Đăng nhập</button>
+        </div>
+      </div>
+
       <div class="row" style="justify-content:space-between;align-items:flex-start">
         <div style="flex:1">
           <div class="muted">Ghi chú cho ngày âm (vd 12/12 âm — ghi lặp hằng năm nếu muốn)</div>
+
           <div style="margin-top:8px" class="row">
             <input type="text" id="noteLunarDay" placeholder="dd/mm (âm)" style="width:150px" inputmode="numeric" />
             <input type="text" id="noteLunarYear" placeholder="(tùy chọn yyyy)" style="width:120px" />
             <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="repeatAnnually"/>Lặp hàng năm</label>
           </div>
+
           <textarea id="noteText" rows="3" placeholder="Viết ghi chú..." style="margin-top:8px;width:100%"></textarea>
-          <div style="display:flex;gap:8px;margin-top:8px"><button id="saveNote">Lưu ghi chú</button><button id="showNotes">Hiện ghi chú cho ngày</button></div>
+
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="saveNote">Lưu ghi chú</button>
+            <button id="showNotes" class="ghost">Hiện ghi chú cho ngày</button>
+          </div>
         </div>
-        <div style="width:260px"><div class="muted">Ghi chú cho hôm nay (âm)</div><div id="todayNotes" style="margin-top:8px"></div></div>
+
+        <div style="width:260px">
+          <div class="muted">Ghi chú cho hôm nay (âm)</div>
+          <div id="todayNotes" style="margin-top:8px"></div>
+        </div>
       </div>
+
       <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.04)" />
-      <div><div class="muted">Tất cả ghi chú đã lưu</div><div id="allNotes" class="note-list" style="margin-top:8px"></div></div>
+      <div>
+        <div class="muted">Tất cả ghi chú đã lưu</div>
+        <div id="allNotes" class="note-list" style="margin-top:8px"></div>
+      </div>
     </section>
 
-    <footer style="margin-top:10px;text-align:center;color:var(--muted)">Mã nguồn chạy hoàn toàn tại trình duyệt • Dữ liệu lưu cục bộ</footer>
+    <footer style="margin-top:10px;text-align:center;color:var(--muted)">
+      Mã nguồn chạy tại trình duyệt • Dữ liệu ghi chú lưu Firestore theo tài khoản
+    </footer>
   </div>
 
-  <script>
-  // calendar core (standard public algos)
-  function jdFromDate(dd, mm, yy) { var a = Math.floor((14 - mm) / 12); var y = yy + 4800 - a; var m = mm + 12 * a - 3; var jd = dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045; if (jd < 2299161) { jd = dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - 32083; } return jd; }
-  function jdToDate(jd) { var a,b,c,d,e,m; if (jd > 2299160) { a = jd + 32044; b = Math.floor((4 * a + 3) / 146097); c = a - Math.floor((b * 146097) / 4); } else { b = 0; c = jd + 32082; } d = Math.floor((4 * c + 3) / 1461); e = c - Math.floor((1461 * d) / 4); m = Math.floor((5 * e + 2) / 153); var day = e - Math.floor((153 * m + 2) / 5) + 1; var month = m + 3 - 12 * Math.floor(m / 10); var year = b * 100 + d - 4800 + Math.floor(m / 10); return [day, month, year]; }
-  function getNewMoonDay(k, timeZone) { var T = k / 1236.85; var T2 = T * T; var T3 = T2 * T; var dr = Math.PI / 180; var Jd1 = 2415020.75933 + 29.53058868 * k + 0.0001178 * T2 - 0.000000155 * T3; Jd1 = Jd1 + 0.00033 * Math.sin((166.56 + 132.87 * T - 0.009173 * T2) * dr); var M = 359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3; var Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3; var F = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3; var C1 = (0.1734 - 0.000393 * T) * Math.sin(M * dr) + 0.0021 * Math.sin(2 * dr * M); C1 = C1 - 0.4068 * Math.sin(Mpr * dr) + 0.0161 * Math.sin(2 * dr * Mpr); C1 = C1 - 0.0004 * Math.sin(3 * dr * Mpr); C1 = C1 + 0.0104 * Math.sin(2 * dr * F) - 0.0051 * Math.sin((M + Mpr) * dr); C1 = C1 - 0.0074 * Math.sin((M - Mpr) * dr) + 0.0004 * Math.sin((2 * F + M) * dr); C1 = C1 - 0.0004 * Math.sin((2 * F - M) * dr) - 0.0006 * Math.sin((2 * F + Mpr) * dr); C1 = C1 + 0.0010 * Math.sin((2 * F - Mpr) * dr) + 0.0005 * Math.sin((2 * Mpr) * dr); var deltaT; if (T < -11) deltaT = 0.001 + 0.000839 * T + 0.0002261 * T2 - 0.00000845 * T3 - 0.000000081 * T * T3; else deltaT = -0.000278 + 0.000265 * T + 0.000262 * T2; var JdNew = Jd1 + C1 - deltaT; return Math.floor(JdNew + 0.5 + timeZone / 24); }
-  function getSunLongitude(jdn, timeZone) { var T = (jdn - 2451545.5 - timeZone / 24) / 36525; var T2 = T * T; var dr = Math.PI / 180; var M = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T * T2; var L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2; var DL = (1.914600 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M); DL = DL + (0.019993 - 0.000101 * T) * Math.sin(dr * 2 * M) + 0.000290 * Math.sin(dr * 3 * M); var L = L0 + DL; L = L * dr; L = L - Math.PI * 2 * (Math.floor(L / (Math.PI * 2))); return Math.floor(L / Math.PI * 6); }
-  function getLunarMonth11(yy, timeZone) { var off = jdFromDate(31, 12, yy) - 2415021; var k = Math.floor(off / 29.530588853); var nm = getNewMoonDay(k, timeZone); var sunLong = getSunLongitude(nm, timeZone); if (sunLong >= 9) nm = getNewMoonDay(k - 1, timeZone); return nm; }
-  function getLeapMonthOffset(a11, timeZone) { var k = Math.floor((a11 - 2415021.076998695) / 29.530588853 + 0.5); var last = 0; var i = 1; var arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone); do { last = arc; i++; arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone); } while (arc !== last && i < 14); return i - 1; }
-  function convertSolar2Lunar(dd, mm, yy, timeZone) { var dayNumber = jdFromDate(dd, mm, yy); var k = Math.floor((dayNumber - 2415021.076998695) / 29.530588853); var monthStart = getNewMoonDay(k + 1, timeZone); if (monthStart > dayNumber) { monthStart = getNewMoonDay(k, timeZone); } var a11 = getLunarMonth11(yy, timeZone); var b11 = a11; var lunarYear; if (a11 >= monthStart) { lunarYear = yy; a11 = getLunarMonth11(yy - 1, timeZone); } else { lunarYear = yy + 1; b11 = getLunarMonth11(yy + 1, timeZone); } var lunarDay = dayNumber - monthStart + 1; var diff = Math.floor((monthStart - a11) / 29); var lunarMonth = diff + 11; var lunarLeap = 0; if (b11 - a11 > 365) { var leapMonthDiff = getLeapMonthOffset(a11, timeZone); if (diff >= leapMonthDiff) { lunarMonth = diff + 10; if (diff === leapMonthDiff) lunarLeap = 1; } } if (lunarMonth > 12) lunarMonth -= 12; if (lunarMonth >= 11 && diff < 4) lunarYear -= 1; return {day: lunarDay, month: lunarMonth, year: lunarYear, leap: lunarLeap}; }
-  function convertLunar2Solar(lunarDay, lunarMonth, lunarYear, lunarLeap, timeZone) {
-    // First attempt: use algorithmic method
-    try {
-      var a11 = getLunarMonth11(lunarYear, timeZone);
-      var b11 = getLunarMonth11(lunarYear + 1, timeZone);
-      var off = lunarMonth - 11;
-      if (off < 0) off += 12;
-      var k = Math.floor(0.5 + (a11 - 2415021.076998695) / 29.530588853);
-      var monthStart = getNewMoonDay(k + off, timeZone);
-      if (b11 - a11 > 365) {
-        var leapOff = getLeapMonthOffset(a11, timeZone);
-        var leapMonth = leapOff - 2;
-        if (leapMonth < 0) leapMonth += 12;
-        if (lunarLeap !== 0 && lunarMonth !== leapMonth) return null; // invalid
-        if (lunarLeap !== 0 || off >= leapOff) monthStart = getNewMoonDay(k + off + 1, timeZone);
-      }
-      var jd = monthStart + lunarDay - 1;
-      var res = jdToDate(jd);
-      // validate result by converting back
-      var back = convertSolar2Lunar(res[0], res[1], res[2], timeZone);
-      if (back && back.day === lunarDay && back.month === lunarMonth && back.year === lunarYear && (back.leap?1:0) === (lunarLeap?1:0)) {
-        return res;
-      }
-    } catch (e) {
-      // fallthrough to search
+  <!-- Login modal -->
+  <div id="loginOverlay" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Đăng nhập</h3>
+      <div class="muted">Dùng Email/Password. Nếu chưa có tài khoản thì bấm “Đăng ký”.</div>
+
+      <div class="col">
+        <input type="text" id="loginEmail" placeholder="Email" autocomplete="email" />
+        <input type="password" id="loginPass" placeholder="Mật khẩu" autocomplete="current-password" />
+      </div>
+
+      <div class="actions">
+        <button id="btnLogin">Đăng nhập</button>
+        <button id="btnOpenRegister" class="ghost">Đăng ký</button>
+      </div>
+
+      <button id="btnCloseLogin" class="close ghost">Đóng</button>
+    </div>
+  </div>
+
+  <!-- Register modal (popup mới) -->
+  <div id="registerOverlay" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Đăng ký</h3>
+      <div class="muted">Tạo tài khoản mới bằng Email/Password.</div>
+
+      <div class="col">
+        <input type="text" id="regEmail" placeholder="Email" autocomplete="email" />
+        <input type="password" id="regPass" placeholder="Mật khẩu" autocomplete="new-password" />
+        <input type="password" id="regPass2" placeholder="Nhập lại mật khẩu" autocomplete="new-password" />
+      </div>
+
+      <div class="actions">
+        <button id="btnRegister">Tạo tài khoản</button>
+        <button id="btnBackToLogin" class="ghost">Quay lại đăng nhập</button>
+      </div>
+
+      <button id="btnCloseRegister" class="close ghost">Đóng</button>
+    </div>
+  </div>
+
+  <!-- Error popup modal -->
+  <div id="alertOverlay" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal alert-modal">
+      <h3 class="alert-title" id="alertTitle">Thông báo</h3>
+      <p class="alert-msg" id="alertMsg"></p>
+      <button id="btnCloseAlert" class="close ghost">Đóng</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // ===== Firebase (CDN modular) =====
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+    import {
+      getAuth, onAuthStateChanged,
+      signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
+    } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+    import {
+      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot
+    } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+
+    // ✅ state trên cùng
+    let currentUser = null;
+    let unsubNotes = null;
+    let notesCache = new Map();
+
+    // TODO: THAY firebaseConfig của bạn tại đây
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtBHNripkXGG__LgW16VO0bKCayxzVarE",
+      authDomain: "ghichulich.firebaseapp.com",
+      projectId: "ghichulich",
+      storageBucket: "ghichulich.firebasestorage.app",
+      messagingSenderId: "102308589212",
+      appId: "1:102308589212:web:f4ce4981e3a6214eeb0759",
+      measurementId: "G-L7TN785469"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ===== Popup alert helper =====
+    const alertOverlay = document.getElementById('alertOverlay');
+    const alertTitleEl = document.getElementById('alertTitle');
+    const alertMsgEl = document.getElementById('alertMsg');
+    const btnCloseAlert = document.getElementById('btnCloseAlert');
+
+    function showAlert(title, msg){
+      alertTitleEl.textContent = title || 'Thông báo';
+      alertMsgEl.textContent = msg || '';
+      alertOverlay.style.display = 'flex';
+    }
+    function closeAlert(){ alertOverlay.style.display = 'none'; }
+    btnCloseAlert.addEventListener('click', closeAlert);
+    alertOverlay.addEventListener('click', (e)=>{ if(e.target === alertOverlay) closeAlert(); });
+
+    function friendlyAuthError(e){
+      const code = e?.code || '';
+      if(code === 'auth/invalid-credential') return 'Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.';
+      if(code === 'auth/user-not-found') return 'Không tìm thấy tài khoản. Bạn có thể bấm “Đăng ký”.';
+      if(code === 'auth/wrong-password') return 'Sai mật khẩu. Vui lòng thử lại.';
+      if(code === 'auth/email-already-in-use') return 'Email này đã được dùng. Hãy đăng nhập hoặc dùng email khác.';
+      if(code === 'auth/weak-password') return 'Mật khẩu quá yếu. Hãy dùng mật khẩu dài hơn (tối thiểu 6 ký tự).';
+      if(code === 'auth/invalid-email') return 'Email không hợp lệ.';
+      if(code === 'auth/configuration-not-found') return 'Firebase Auth chưa cấu hình đúng (bật Email/Password + Authorized domains).';
+      return e?.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
     }
 
-    // Fallback: brute-force search over a 3-year window around lunarYear
-    var startYear = lunarYear - 1;
-    var endYear = lunarYear + 1;
-    for (var yy = startYear; yy <= endYear; yy++) {
-      for (var mm = 1; mm <= 12; mm++) {
-        for (var dd = 1; dd <= 31; dd++) {
-          var dt = new Date(yy, mm - 1, dd);
-          if (dt.getFullYear() !== yy || dt.getMonth() + 1 !== mm || dt.getDate() !== dd) continue; // invalid date
-          var lun = convertSolar2Lunar(dd, mm, yy, timeZone);
-          if (lun && lun.day === lunarDay && lun.month === lunarMonth && lun.year === lunarYear && (lun.leap?1:0) === (lunarLeap?1:0)) {
-            return [dd, mm, yy];
-          }
+    // ===== calendar core =====
+    function jdFromDate(dd, mm, yy) {
+      var a = Math.floor((14 - mm) / 12);
+      var y = yy + 4800 - a;
+      var m = mm + 12 * a - 3;
+      var jd = dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+      if (jd < 2299161) jd = dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - 32083;
+      return jd;
+    }
+    function jdToDate(jd) {
+      var a,b,c,d,e,m;
+      if (jd > 2299160) { a = jd + 32044; b = Math.floor((4 * a + 3) / 146097); c = a - Math.floor((b * 146097) / 4); }
+      else { b = 0; c = jd + 32082; }
+      d = Math.floor((4 * c + 3) / 1461);
+      e = c - Math.floor((1461 * d) / 4);
+      m = Math.floor((5 * e + 2) / 153);
+      var day = e - Math.floor((153 * m + 2) / 5) + 1;
+      var month = m + 3 - 12 * Math.floor(m / 10);
+      var year = b * 100 + d - 4800 + Math.floor(m / 10);
+      return [day, month, year];
+    }
+    function getNewMoonDay(k, timeZone) {
+      var T = k / 1236.85, T2 = T*T, T3 = T2*T, dr = Math.PI/180;
+      var Jd1 = 2415020.75933 + 29.53058868*k + 0.0001178*T2 - 0.000000155*T3;
+      Jd1 += 0.00033*Math.sin((166.56 + 132.87*T - 0.009173*T2)*dr);
+      var M = 359.2242 + 29.10535608*k - 0.0000333*T2 - 0.00000347*T3;
+      var Mpr = 306.0253 + 385.81691806*k + 0.0107306*T2 + 0.00001236*T3;
+      var F = 21.2964 + 390.67050646*k - 0.0016528*T2 - 0.00000239*T3;
+      var C1 = (0.1734 - 0.000393*T)*Math.sin(M*dr) + 0.0021*Math.sin(2*dr*M);
+      C1 = C1 - 0.4068*Math.sin(Mpr*dr) + 0.0161*Math.sin(2*dr*Mpr) - 0.0004*Math.sin(3*dr*Mpr);
+      C1 = C1 + 0.0104*Math.sin(2*dr*F) - 0.0051*Math.sin((M+Mpr)*dr) - 0.0074*Math.sin((M-Mpr)*dr);
+      C1 = C1 + 0.0004*Math.sin((2*F+M)*dr) - 0.0004*Math.sin((2*F-M)*dr) - 0.0006*Math.sin((2*F+Mpr)*dr);
+      C1 = C1 + 0.0010*Math.sin((2*F-Mpr)*dr) + 0.0005*Math.sin((2*Mpr)*dr);
+      var deltaT;
+      if (T < -11) deltaT = 0.001 + 0.000839*T + 0.0002261*T2 - 0.00000845*T3 - 0.000000081*T*T3;
+      else deltaT = -0.000278 + 0.000265*T + 0.000262*T2;
+      var JdNew = Jd1 + C1 - deltaT;
+      return Math.floor(JdNew + 0.5 + timeZone/24);
+    }
+    function getSunLongitude(jdn, timeZone) {
+      var T = (jdn - 2451545.5 - timeZone/24) / 36525, T2 = T*T, dr = Math.PI/180;
+      var M = 357.52910 + 35999.05030*T - 0.0001559*T2 - 0.00000048*T*T2;
+      var L0 = 280.46645 + 36000.76983*T + 0.0003032*T2;
+      var DL = (1.914600 - 0.004817*T - 0.000014*T2)*Math.sin(dr*M);
+      DL = DL + (0.019993 - 0.000101*T)*Math.sin(dr*2*M) + 0.000290*Math.sin(dr*3*M);
+      var L = (L0 + DL) * dr;
+      L = L - Math.PI*2*(Math.floor(L/(Math.PI*2)));
+      return Math.floor(L/Math.PI*6);
+    }
+    function getLunarMonth11(yy, timeZone) {
+      var off = jdFromDate(31,12,yy) - 2415021;
+      var k = Math.floor(off/29.530588853);
+      var nm = getNewMoonDay(k, timeZone);
+      if (getSunLongitude(nm, timeZone) >= 9) nm = getNewMoonDay(k-1, timeZone);
+      return nm;
+    }
+    function getLeapMonthOffset(a11, timeZone) {
+      var k = Math.floor((a11 - 2415021.076998695)/29.530588853 + 0.5);
+      var last = 0, i = 1;
+      var arc = getSunLongitude(getNewMoonDay(k+i, timeZone), timeZone);
+      do { last = arc; i++; arc = getSunLongitude(getNewMoonDay(k+i, timeZone), timeZone); }
+      while (arc !== last && i < 14);
+      return i - 1;
+    }
+    function convertSolar2Lunar(dd, mm, yy, timeZone) {
+      var dayNumber = jdFromDate(dd, mm, yy);
+      var k = Math.floor((dayNumber - 2415021.076998695) / 29.530588853);
+      var monthStart = getNewMoonDay(k+1, timeZone);
+      if (monthStart > dayNumber) monthStart = getNewMoonDay(k, timeZone);
+
+      var a11 = getLunarMonth11(yy, timeZone), b11 = a11, lunarYear;
+      if (a11 >= monthStart) { lunarYear = yy; a11 = getLunarMonth11(yy-1, timeZone); }
+      else { lunarYear = yy+1; b11 = getLunarMonth11(yy+1, timeZone); }
+
+      var lunarDay = dayNumber - monthStart + 1;
+      var diff = Math.floor((monthStart - a11) / 29);
+      var lunarMonth = diff + 11;
+      var lunarLeap = 0;
+
+      if (b11 - a11 > 365) {
+        var leapMonthDiff = getLeapMonthOffset(a11, timeZone);
+        if (diff >= leapMonthDiff) {
+          lunarMonth = diff + 10;
+          if (diff === leapMonthDiff) lunarLeap = 1;
         }
       }
+      if (lunarMonth > 12) lunarMonth -= 12;
+      if (lunarMonth >= 11 && diff < 4) lunarYear -= 1;
+      return {day:lunarDay, month:lunarMonth, year:lunarYear, leap:lunarLeap};
     }
-    return null;
-  }
+    function convertLunar2Solar(lunarDay, lunarMonth, lunarYear, lunarLeap, timeZone) {
+      try {
+        var a11 = getLunarMonth11(lunarYear, timeZone);
+        var b11 = getLunarMonth11(lunarYear+1, timeZone);
+        var off = lunarMonth - 11; if (off < 0) off += 12;
+        var k = Math.floor(0.5 + (a11 - 2415021.076998695)/29.530588853);
+        var monthStart = getNewMoonDay(k + off, timeZone);
 
-  function pad(n){return n.toString().padStart(2,'0')}
-  function fmtSolar(d,m,y){return pad(d) + '-' + pad(m) + '-' + y}
-  function fmtLunar(obj){ if(!obj) return ''+obj; return pad(obj.day)+'-'+pad(obj.month)+(obj.leap? ' (nhuận)':'') + ' - ' + obj.year; }
-  function weekdayFromDate(d,m,y){ const dt = new Date(y, m-1, d); const days = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7']; return days[dt.getDay()]; }
+        if (b11 - a11 > 365) {
+          var leapOff = getLeapMonthOffset(a11, timeZone);
+          var leapMonth = leapOff - 2; if (leapMonth < 0) leapMonth += 12;
+          if (lunarLeap !== 0 && lunarMonth !== leapMonth) return null;
+          if (lunarLeap !== 0 || off >= leapOff) monthStart = getNewMoonDay(k + off + 1, timeZone);
+        }
+        var jd = monthStart + lunarDay - 1;
+        return jdToDate(jd);
+      } catch(e) { return null; }
+    }
 
-  // UI wiring
-  const todaySolarEl = document.getElementById('todaySolar');
-  const todayLunarEl = document.getElementById('todayLunar');
-  const tzSelect = document.getElementById('tzSelect');
-  const tabs = document.querySelectorAll('.tab');
-  const panels = document.querySelectorAll('[data-panel]');
+    function pad(n){return n.toString().padStart(2,'0')}
+    function fmtSolar(d,m,y){return pad(d) + '-' + pad(m) + '-' + y}
+    function fmtLunar(obj){ if(!obj) return ''+obj; return pad(obj.day)+'-'+pad(obj.month)+(obj.leap? ' (nhuận)':'') + ' - ' + obj.year; }
+    function weekdayFromDate(d,m,y){
+      const dt = new Date(y, m-1, d);
+      const days = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+      return days[dt.getDay()];
+    }
 
-  function updateToday() {
-    const now = new Date();
-    const d = now.getDate(), m = now.getMonth() + 1, y = now.getFullYear();
-    todaySolarEl.textContent = fmtSolar(d,m,y) + ' • ' + weekdayFromDate(d,m,y);
-    const tz = Number(tzSelect.value);
-    const lun = convertSolar2Lunar(d,m,y,tz);
-    todayLunarEl.textContent = fmtLunar(lun);
-    renderTodayNotes(lun);
-  }
+    // ===== UI wiring =====
+    const todaySolarEl = document.getElementById('todaySolar');
+    const todayLunarEl = document.getElementById('todayLunar');
+    const tzSelect = document.getElementById('tzSelect');
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('[data-panel]');
 
-  tzSelect.addEventListener('change', updateToday);
-  updateToday();
+    function updateToday() {
+      const now = new Date();
+      const d = now.getDate(), m = now.getMonth()+1, y = now.getFullYear();
+      todaySolarEl.textContent = fmtSolar(d,m,y) + ' • ' + weekdayFromDate(d,m,y);
+      const tz = Number(tzSelect.value);
+      const lun = convertSolar2Lunar(d,m,y,tz);
+      todayLunarEl.textContent = fmtLunar(lun);
+      renderTodayNotes(lun);
+    }
+    tzSelect.addEventListener('change', updateToday);
 
-  tabs.forEach(t => t.addEventListener('click', (e) => { tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); const tab = t.getAttribute('data-tab'); panels.forEach(p => p.style.display = p.getAttribute('data-panel') === tab ? '' : 'none'); }));
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      const tab = t.getAttribute('data-tab');
+      panels.forEach(p => p.style.display = p.getAttribute('data-panel') === tab ? '' : 'none');
+    }));
 
-  // attach auto slash behavior to inputs (real-time show "/")
-  const solarInput = document.getElementById('solarInput');
-  if (solarInput) {
-    solarInput.addEventListener('input', function (e) { const old = this.value; const digits = old.replace(/\D/g, ''); let res = ''; if (digits.length <= 2) res = digits; else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2); else res = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4,8); this.value = res; });
-    solarInput.addEventListener('blur', function () { const parts = this.value.split('/'); if (parts[0]) parts[0] = parts[0].padStart(2, '0'); if (parts[1]) parts[1] = parts[1].padStart(2, '0'); if (parts[2]) parts[2] = parts[2].slice(0,4); this.value = parts.filter(Boolean).join('/'); });
-  }
-  const lunarInput = document.getElementById('lunarInput');
-  if (lunarInput) {
-    lunarInput.addEventListener('input', function (e) { const old = this.value; const digits = old.replace(/\D/g, ''); let res = ''; if (digits.length <= 2) res = digits; else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2); else res = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4,8); this.value = res; });
-    lunarInput.addEventListener('blur', function () { const parts = this.value.split('/'); if (parts[0]) parts[0] = parts[0].padStart(2, '0'); if (parts[1]) parts[1] = parts[1].padStart(2, '0'); if (parts[2]) parts[2] = parts[2].slice(0,4); this.value = parts.filter(Boolean).join('/'); });
-  }
+    function attachSlashInput(el, maxDigits=8){
+      el.addEventListener('input', function () {
+        const digits = this.value.replace(/\D/g, '').slice(0,maxDigits);
+        let res = '';
+        if (digits.length <= 2) res = digits;
+        else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2);
+        else res = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4,8);
+        this.value = res;
+      });
+      el.addEventListener('blur', function () {
+        const parts = this.value.split('/');
+        if (parts[0]) parts[0] = parts[0].padStart(2,'0');
+        if (parts[1]) parts[1] = parts[1].padStart(2,'0');
+        if (parts[2]) parts[2] = parts[2].slice(0,4);
+        this.value = parts.filter(Boolean).join('/');
+      });
+    }
+    attachSlashInput(document.getElementById('solarInput'), 8);
+    attachSlashInput(document.getElementById('lunarInput'), 8);
 
-  // note input (dd/mm) behaviour
-  const noteLunarDayInput = document.getElementById('noteLunarDay');
-  if (noteLunarDayInput) {
-    noteLunarDayInput.addEventListener('input', function (e) {
-      const old = this.value; const digits = old.replace(/\D/g, '').slice(0,4); let res = '';
+    const noteLunarDayInput = document.getElementById('noteLunarDay');
+    noteLunarDayInput.addEventListener('input', function () {
+      const digits = this.value.replace(/\D/g,'').slice(0,4);
+      let res = '';
       if (digits.length <= 2) res = digits;
-      else if (digits.length <= 4) res = digits.slice(0,2) + '/' + digits.slice(2);
+      else res = digits.slice(0,2) + '/' + digits.slice(2);
       this.value = res;
     });
-    noteLunarDayInput.addEventListener('blur', function () { const parts = this.value.split('/'); if (parts[0]) parts[0] = parts[0].padStart(2,'0'); if (parts[1]) parts[1] = parts[1].padStart(2,'0'); this.value = parts.filter(Boolean).join('/'); });
-  }
+    noteLunarDayInput.addEventListener('blur', function () {
+      const parts = this.value.split('/');
+      if (parts[0]) parts[0] = parts[0].padStart(2,'0');
+      if (parts[1]) parts[1] = parts[1].padStart(2,'0');
+      this.value = parts.filter(Boolean).join('/');
+    });
 
-  document.getElementById('toLunar').addEventListener('click', ()=>{
-    const v = document.getElementById('solarInput').value.trim();
-    if(!v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)) { alert('Nhập theo dạng dd/mm/yyyy'); return; }
-    const parts = v.split('/').map(Number);
-    const tz = Number(tzSelect.value);
-    const res = convertSolar2Lunar(parts[0],parts[1],parts[2],tz);
-    document.getElementById('s2lResult').textContent = fmtLunar(res) + ' • ' + weekdayFromDate(parts[0],parts[1],parts[2]);
-  });
+    document.getElementById('toLunar').addEventListener('click', ()=>{
+      const v = document.getElementById('solarInput').value.trim();
+      if(!v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)) { showAlert('Sai định dạng', 'Nhập theo dạng dd/mm/yyyy'); return; }
+      const [dd,mm,yy] = v.split('/').map(Number);
+      const tz = Number(tzSelect.value);
+      const res = convertSolar2Lunar(dd,mm,yy,tz);
+      document.getElementById('s2lResult').textContent = fmtLunar(res) + ' • ' + weekdayFromDate(dd,mm,yy);
+    });
 
-  document.getElementById('toSolar').addEventListener('click', ()=>{
-    const v = document.getElementById('lunarInput').value.trim();
-    if(!v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)) { alert('Nhập theo dạng dd/mm/yyyy (âm)'); return; }
-    const parts = v.split('/').map(Number);
-    const d = parts[0], m = parts[1], y = parts[2];
-    const leap = document.getElementById('isLeap').checked ? 1:0;
-    const tz = Number(tzSelect.value);
-    const res = convertLunar2Solar(d,m,y,leap,tz);
-    if(!res){document.getElementById('l2sResult').textContent = 'Không hợp lệ (kiểm tra tháng nhuận)'; return}
-    document.getElementById('l2sResult').textContent = fmtSolar(res[0],res[1],res[2]) + ' • ' + weekdayFromDate(res[0],res[1],res[2]);
-  });
+    document.getElementById('toSolar').addEventListener('click', ()=>{
+      const v = document.getElementById('lunarInput').value.trim();
+      if(!v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)) { showAlert('Sai định dạng', 'Nhập theo dạng dd/mm/yyyy (âm)'); return; }
+      const [dd,mm,yy] = v.split('/').map(Number);
+      const leap = document.getElementById('isLeap').checked ? 1:0;
+      const tz = Number(tzSelect.value);
+      const res = convertLunar2Solar(dd,mm,yy,leap,tz);
+      if(!res){ document.getElementById('l2sResult').textContent = 'Không hợp lệ (kiểm tra tháng nhuận)'; return; }
+      document.getElementById('l2sResult').textContent = fmtSolar(res[0],res[1],res[2]) + ' • ' + weekdayFromDate(res[0],res[1],res[2]);
+    });
 
-  // Notes storage (localStorage)
-  function noteKey(lDay,lMonth,lYear,annual){ if(annual) return `note:L:AN:${pad(lDay)}-${pad(lMonth)}`; if(lYear) return `note:L:${pad(lDay)}-${pad(lMonth)}-${lYear}`; return `note:L:${pad(lDay)}-${pad(lMonth)}`; }
-  function saveNote(){
-    const dmm = document.getElementById('noteLunarDay').value.trim();
-    const year = document.getElementById('noteLunarYear').value.trim();
-    const annual = document.getElementById('repeatAnnually').checked;
-    const txt = document.getElementById('noteText').value.trim();
-    const m = dmm.match(/^(\d{1,2})\/(\d{1,2})$/);
-    if(!m){ alert('Nhập dạng dd/mm (âm)'); return; }
-    const dd = Number(m[1]), mm = Number(m[2]);
-    if(dd < 1 || dd > 31 || mm < 1 || mm > 12){ alert('Ngày hoặc tháng không hợp lệ'); return; }
-    const ky = noteKey(dd,mm, year || null, annual);
-    const payload = {text:txt, day:dd, month:mm, year: year||null, annual:annual, savedAt: new Date().toISOString()};
-    localStorage.setItem(ky, JSON.stringify(payload));
-    alert('Đã lưu');
-    renderAllNotes();
-  }
-  function loadNoteFor(lunDay, lunMonth, lunYear){ const specific = localStorage.getItem(noteKey(lunDay,lunMonth,lunYear,false)); if(specific) return JSON.parse(specific); const annual = localStorage.getItem(noteKey(lunDay,lunMonth,null,true)); if(annual) return JSON.parse(annual); return null; }
-  function renderTodayNotes(lun){ const container = document.getElementById('todayNotes'); container.innerHTML = ''; const note = loadNoteFor(lun.day, lun.month, lun.year); if(note){ const div = document.createElement('div');div.className='note-item';div.textContent = note.text + '\n(' + (note.annual? 'Lặp hàng năm':'Theo năm ' + (note.year||'n/a')) + ')'; container.appendChild(div);} else { container.textContent = 'Chưa có ghi chú cho hôm nay (âm)'; } }
-  function renderAllNotes(){ const out = document.getElementById('allNotes'); out.innerHTML=''; for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(!k.startsWith('note:L:')) continue; try { const p = JSON.parse(localStorage.getItem(k)); const div = document.createElement('div'); div.className='note-item'; let title = `${pad(p.day)}-${pad(p.month)}` + (p.year? '-' + p.year : '') + (p.annual? ' (Lặp)':''); div.innerHTML = `<strong>${title}</strong><div style="margin-top:6px">${p.text}</div><div class="muted" style="margin-top:6px;font-size:12px">Lưu: ${new Date(p.savedAt).toLocaleString()}</div><div style="margin-top:8px"><button data-key="${k}" class="del">Xoá</button></div>`; out.appendChild(div);} catch(e){ } } out.querySelectorAll('.del').forEach(b=>b.addEventListener('click', e=>{ const k = e.currentTarget.getAttribute('data-key'); if(confirm('Xoá ghi chú?')){ localStorage.removeItem(k); renderAllNotes(); updateToday(); }})); }
-  document.getElementById('saveNote').addEventListener('click', saveNote);
-  document.getElementById('showNotes').addEventListener('click', ()=>{ const dmm = document.getElementById('noteLunarDay').value.trim(); const year = document.getElementById('noteLunarYear').value.trim(); const m = dmm.match(/^(\d{1,2})\/(\d{1,2})$/); if(!m){ alert('Nhập dạng dd/mm (âm)'); return; } const [dd,mm] = [Number(m[1]), Number(m[2])]; const note = loadNoteFor(dd,mm, year || null); if(note) { alert('Ghi chú:\n' + note.text); } else alert('Chưa có ghi chú cho ngày đó'); });
-  renderAllNotes();
+    // ===== Notes (Firestore theo user) =====
+    function noteIdFromInput(dd, mm, year, annual){
+      if (annual) return `AN-${pad(dd)}-${pad(mm)}`;
+      if (year) return `Y-${pad(dd)}-${pad(mm)}-${String(year).slice(0,4)}`;
+      return `D-${pad(dd)}-${pad(mm)}`;
+    }
+    function parseNoteDayMonth(str){
+      const m = str.match(/^(\d{1,2})\/(\d{1,2})$/);
+      if(!m) return null;
+      const dd = Number(m[1]), mm = Number(m[2]);
+      if(dd < 1 || dd > 31 || mm < 1 || mm > 12) return null;
+      return {dd, mm};
+    }
+    function loadNoteFor(lunDay, lunMonth, lunYear){
+      const idY  = noteIdFromInput(lunDay, lunMonth, lunYear, false);
+      const idD  = noteIdFromInput(lunDay, lunMonth, null, false);
+      const idAN = noteIdFromInput(lunDay, lunMonth, null, true);
+      return notesCache.get(idY) || notesCache.get(idD) || notesCache.get(idAN) || null;
+    }
+
+    async function saveNoteToFirestore(){
+      if(!currentUser){ showAlert('Chưa đăng nhập', 'Bạn cần đăng nhập để lưu ghi chú.'); return; }
+
+      const dmm = document.getElementById('noteLunarDay').value.trim();
+      const year = document.getElementById('noteLunarYear').value.trim();
+      const annual = document.getElementById('repeatAnnually').checked;
+      const txt = document.getElementById('noteText').value.trim();
+
+      const parsed = parseNoteDayMonth(dmm);
+      if(!parsed){ showAlert('Sai định dạng', 'Nhập dạng dd/mm (âm)'); return; }
+      if(!txt){ showAlert('Thiếu nội dung', 'Nhập nội dung ghi chú'); return; }
+
+      const noteId = noteIdFromInput(parsed.dd, parsed.mm, year || null, annual);
+      const ref = doc(db, 'users', currentUser.uid, 'notes', noteId);
+
+      const payload = {
+        id: noteId,
+        text: txt,
+        day: parsed.dd,
+        month: parsed.mm,
+        year: year ? String(year).slice(0,4) : null,
+        annual: !!annual,
+        savedAt: new Date().toISOString()
+      };
+
+      await setDoc(ref, payload, { merge: true });
+      showAlert('Thành công', 'Đã lưu ghi chú.');
+      document.getElementById('noteText').value = '';
+    }
+
+    async function deleteNoteFromFirestore(noteId){
+      if(!currentUser) return;
+      if(!confirm('Xoá ghi chú?')) return;
+      await deleteDoc(doc(db, 'users', currentUser.uid, 'notes', noteId));
+    }
+
+    function renderTodayNotes(lun){
+      const container = document.getElementById('todayNotes');
+      container.innerHTML = '';
+      if(!currentUser){
+        container.textContent = '🔒 Đăng nhập để xem ghi chú của bạn';
+        return;
+      }
+      const note = loadNoteFor(lun.day, lun.month, lun.year);
+      if(note){
+        const div = document.createElement('div');
+        div.className='note-item';
+        div.textContent = note.text + ' (' + (note.annual? 'Lặp hàng năm' : (note.year? 'Theo năm ' + note.year : 'Không theo năm')) + ')';
+        container.appendChild(div);
+      } else {
+        container.textContent = 'Chưa có ghi chú cho hôm nay (âm)';
+      }
+    }
+
+    function renderAllNotes(){
+      const out = document.getElementById('allNotes');
+      out.innerHTML = '';
+
+      if(!currentUser){
+        out.innerHTML = '<div class="muted">🔒 Đăng nhập để dùng ghi chú</div>';
+        return;
+      }
+
+      const arr = Array.from(notesCache.values()).sort((a,b)=>{
+        const ka = `${pad(a.month)}${pad(a.day)}${a.year||'9999'}${a.annual?'1':'0'}`;
+        const kb = `${pad(b.month)}${pad(b.day)}${b.year||'9999'}${b.annual?'1':'0'}`;
+        return ka.localeCompare(kb);
+      });
+
+      arr.forEach(p=>{
+        const div = document.createElement('div');
+        div.className='note-item';
+        const title = `${pad(p.day)}-${pad(p.month)}${p.year? '-' + p.year : ''}${p.annual? ' (Lặp)':''}`;
+        div.innerHTML = `
+          <strong>${title}</strong>
+          <div style="margin-top:6px">${p.text}</div>
+          <div class="muted" style="margin-top:6px;font-size:12px">Lưu: ${new Date(p.savedAt).toLocaleString()}</div>
+          <div style="margin-top:8px"><button class="danger" data-id="${p.id}">Xoá</button></div>
+        `;
+        out.appendChild(div);
+      });
+
+      out.querySelectorAll('button[data-id]').forEach(b=>{
+        b.addEventListener('click', e=>{
+          deleteNoteFromFirestore(e.currentTarget.getAttribute('data-id'));
+        });
+      });
+    }
+
+    function setNotesLocked(locked){
+      const overlay = document.getElementById('notesLock');
+      overlay.style.display = locked ? 'flex' : 'none';
+
+      ['noteLunarDay','noteLunarYear','noteText','repeatAnnually','saveNote','showNotes'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.disabled = !!locked;
+      });
+
+      renderAllNotes();
+      updateToday();
+    }
+
+    document.getElementById('saveNote').addEventListener('click', saveNoteToFirestore);
+    document.getElementById('showNotes').addEventListener('click', ()=>{
+      if(!currentUser){ showAlert('Chưa đăng nhập', 'Bạn cần đăng nhập để xem ghi chú.'); return; }
+
+      const dmm = document.getElementById('noteLunarDay').value.trim();
+      const year = document.getElementById('noteLunarYear').value.trim();
+      const parsed = parseNoteDayMonth(dmm);
+      if(!parsed){ showAlert('Sai định dạng', 'Nhập dạng dd/mm (âm)'); return; }
+
+      const y = year ? String(year).slice(0,4) : null;
+      const note = y
+        ? (notesCache.get(noteIdFromInput(parsed.dd, parsed.mm, y, false)) ||
+           notesCache.get(noteIdFromInput(parsed.dd, parsed.mm, null, false)) ||
+           notesCache.get(noteIdFromInput(parsed.dd, parsed.mm, null, true)))
+        : (notesCache.get(noteIdFromInput(parsed.dd, parsed.mm, null, false)) ||
+           notesCache.get(noteIdFromInput(parsed.dd, parsed.mm, null, true)));
+
+      if(note) showAlert('Ghi chú', note.text);
+      else showAlert('Chưa có', 'Chưa có ghi chú cho ngày đó.');
+    });
+
+    // ===== Auth UI (tách login/register) =====
+    const loginOverlay = document.getElementById('loginOverlay');
+    const registerOverlay = document.getElementById('registerOverlay');
+
+    const btnOpenLogin = document.getElementById('btnOpenLogin');
+    const btnOpenLogin2 = document.getElementById('btnOpenLogin2');
+    const btnCloseLogin = document.getElementById('btnCloseLogin');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnOpenRegister = document.getElementById('btnOpenRegister');
+
+    const btnCloseRegister = document.getElementById('btnCloseRegister');
+    const btnRegister = document.getElementById('btnRegister');
+    const btnBackToLogin = document.getElementById('btnBackToLogin');
+
+    const btnLogout = document.getElementById('btnLogout');
+    const authState = document.getElementById('authState');
+
+    function openLogin(){
+      loginOverlay.style.display = 'flex';
+      // clear fields
+      // (không bắt buộc, nhưng cho sạch)
+    }
+    function closeLogin(){ loginOverlay.style.display = 'none'; }
+
+    function openRegister(){
+      registerOverlay.style.display = 'flex';
+    }
+    function closeRegister(){ registerOverlay.style.display = 'none'; }
+
+    btnOpenLogin.addEventListener('click', openLogin);
+    btnOpenLogin2.addEventListener('click', openLogin);
+    btnCloseLogin.addEventListener('click', closeLogin);
+    btnOpenRegister.addEventListener('click', ()=>{
+      closeLogin();
+      openRegister();
+    });
+
+    btnBackToLogin.addEventListener('click', ()=>{
+      closeRegister();
+      openLogin();
+    });
+
+    btnCloseRegister.addEventListener('click', closeRegister);
+
+    loginOverlay.addEventListener('click', (e)=>{ if(e.target === loginOverlay) closeLogin(); });
+    registerOverlay.addEventListener('click', (e)=>{ if(e.target === registerOverlay) closeRegister(); });
+
+    btnLogin.addEventListener('click', async ()=>{
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value.trim();
+      if(!email || !pass){ showAlert('Thiếu thông tin', 'Nhập email và mật khẩu.'); return; }
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+        closeLogin();
+      }catch(e){
+        showAlert('Đăng nhập thất bại', friendlyAuthError(e));
+      }
+    });
+
+    btnRegister.addEventListener('click', async ()=>{
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPass').value.trim();
+      const pass2 = document.getElementById('regPass2').value.trim();
+
+      if(!email || !pass || !pass2){ showAlert('Thiếu thông tin', 'Nhập đủ email và mật khẩu.'); return; }
+      if(pass.length < 6){ showAlert('Mật khẩu yếu', 'Mật khẩu tối thiểu 6 ký tự.'); return; }
+      if(pass !== pass2){ showAlert('Không khớp', 'Mật khẩu nhập lại không khớp.'); return; }
+
+      try{
+        await createUserWithEmailAndPassword(auth, email, pass);
+        closeRegister();
+        // mở login hoặc không cần vì auth đã auto login
+        showAlert('Thành công', 'Đã tạo tài khoản và đăng nhập.');
+      }catch(e){
+        showAlert('Đăng ký thất bại', friendlyAuthError(e));
+      }
+    });
+
+    btnLogout.addEventListener('click', async ()=>{
+      await signOut(auth);
+    });
+
+    function subscribeUserNotes(uid){
+      if(unsubNotes) unsubNotes();
+      notesCache.clear();
+
+      const notesCol = collection(db, 'users', uid, 'notes');
+      unsubNotes = onSnapshot(notesCol, (snap)=>{
+        notesCache.clear();
+        snap.forEach(docu=> notesCache.set(docu.id, docu.data()));
+        renderAllNotes();
+        updateToday();
+      });
+    }
+
+    onAuthStateChanged(auth, (user)=>{
+      currentUser = user || null;
+
+      if(currentUser){
+        authState.textContent = `Đã đăng nhập: ${currentUser.email || currentUser.uid}`;
+        authState.className = 'muted ok';
+        btnOpenLogin.style.display = 'none';
+        btnLogout.style.display = '';
+        setNotesLocked(false);
+        subscribeUserNotes(currentUser.uid);
+      }else{
+        authState.textContent = 'Chưa đăng nhập';
+        authState.className = 'muted';
+        btnOpenLogin.style.display = '';
+        btnLogout.style.display = 'none';
+
+        if(unsubNotes) unsubNotes();
+        unsubNotes = null;
+        notesCache.clear();
+
+        setNotesLocked(true);
+      }
+    });
+
+    // init
+    setNotesLocked(true);
+    updateToday();
   </script>
 </body>
 </html>
-
