@@ -190,7 +190,7 @@
     import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } 
         from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-    // --- CONFIG FIREBASE CỦA MÀY ---
+    // --- CẤU HÌNH FIREBASE CỦA MÀY ---
     const firebaseConfig = {
       apiKey: "AIzaSyDtBHNripkXGG__LgW16VO0bKCayxzVarE",
       authDomain: "ghichulich.firebaseapp.com",
@@ -210,7 +210,7 @@
     let notesMap = new Map();
     let viewMonth = new Date().getMonth(), viewYear = new Date().getFullYear(), selectedDate = new Date(); 
 
-    // HELPERS (Giữ nguyên)
+    // HELPERS
     function pad(n){return n.toString().padStart(2,'0')}
     function jdFromDate(dd,mm,yy){var a=Math.floor((14-mm)/12);var y=yy+4800-a;var m=mm+12*a-3;var jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;if(jd<2299161)jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-32083;return jd}
     function jdToDate(jd){var a,b,c,d,e,m;if(jd>2299160){a=jd+32044;b=Math.floor((4*a+3)/146097);c=a-Math.floor((b*146097)/4)}else{b=0;c=jd+32082}d=Math.floor((4*c+3)/1461);e=c-Math.floor((1461*d)/4);m=Math.floor((5*e+2)/153);var day=e-Math.floor((153*m+2)/5)+1;var month=m+3-12*Math.floor(m/10);var year=b*100+d-4800+Math.floor(m/10);return[day,month,year]}
@@ -221,7 +221,7 @@
     function convertSolar2Lunar(dd,mm,yy,timeZone){var dayNumber=jdFromDate(dd,mm,yy);var k=Math.floor((dayNumber-2415021.076998695)/29.530588853);var monthStart=getNewMoonDay(k+1,timeZone);if(monthStart>dayNumber)monthStart=getNewMoonDay(k,timeZone);var a11=getLunarMonth11(yy,timeZone),b11=a11,lunarYear;if(a11>=monthStart){lunarYear=yy;a11=getLunarMonth11(yy-1,timeZone)}else{lunarYear=yy+1;b11=getLunarMonth11(yy+1,timeZone)}var lunarDay=dayNumber-monthStart+1;var diff=Math.floor((monthStart-a11)/29);var lunarMonth=diff+11;var lunarLeap=0;if(b11-a11>365){var leapMonthDiff=getLeapMonthOffset(a11,timeZone);if(diff>=leapMonthDiff){lunarMonth=diff+10;if(diff===leapMonthDiff)lunarLeap=1}}if(lunarMonth>12)lunarMonth-=12;if(lunarMonth>=11&&diff<4)lunarYear-=1;return{day:lunarDay,month:lunarMonth,year:lunarYear,leap:lunarLeap}}
     function convertLunar2Solar(lunarDay,lunarMonth,lunarYear,lunarLeap,timeZone){try{var a11=getLunarMonth11(lunarYear,timeZone);var b11=getLunarMonth11(lunarYear+1,timeZone);var off=lunarMonth-11;if(off<0)off+=12;var k=Math.floor(0.5+(a11-2415021.076998695)/29.530588853);var monthStart=getNewMoonDay(k+off,timeZone);if(b11-a11>365){var leapOff=getLeapMonthOffset(a11,timeZone);var leapMonth=leapOff-2;if(leapMonth<0)leapMonth+=12;if(lunarLeap!==0&&lunarMonth!==leapMonth)return null;if(lunarLeap!==0||off>=leapOff)monthStart=getNewMoonDay(k+off+1,timeZone)}var jd=monthStart+lunarDay-1;return jdToDate(jd)}catch(e){return null}}
 
-    // MASK INPUTS
+    // MASK INPUTS (Tự động thêm dấu /)
     document.querySelectorAll('.date-mask').forEach(i=>i.addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);if(v.length>=5)e.target.value=`${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4)}`;else if(v.length>=3)e.target.value=`${v.slice(0,2)}/${v.slice(2)}`;else e.target.value=v}));
     document.querySelectorAll('.date-mask-short').forEach(i=>i.addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,4);if(v.length>=3)e.target.value=`${v.slice(0,2)}/${v.slice(2)}`;else e.target.value=v}));
 
@@ -249,7 +249,7 @@
         }
     }
 
-    // AUTH & LOGIC MỚI
+    // MODAL & AUTH UI
     const loginModal = document.getElementById('loginModal');
     window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
     
@@ -258,7 +258,7 @@
         else loginModal.style.display = 'flex';
     };
 
-    // --- GOOGLE SIGN IN ---
+    // GOOGLE SIGN IN
     document.getElementById('btnGoogleLogin').onclick = async () => {
         try {
             await signInWithPopup(auth, googleProvider);
@@ -287,20 +287,46 @@
         const [d,m] = dStr.split('/');
         if(!d||!m||!txt) return alert('Thiếu ngày hoặc nội dung');
         let id = `D-${d}-${m}`; if(ann)id=`AN-${d}-${m}`; else if(yStr)id=`Y-${d}-${m}-${yStr}`;
-        try{ await setDoc(doc(db,'users',currentUser.uid,'notes',id),{id,text:txt,day:parseInt(d),month:parseInt(m),year:yStr||null,annual:ann,savedAt:new Date().toISOString()}); closeModals(); }catch(e){alert(e.message)}
+        
+        // Fix: Lưu year là null nếu không nhập, để hiển thị không bị lỗi
+        const yearVal = yStr ? yStr : null;
+
+        try{ 
+            await setDoc(doc(db,'users',currentUser.uid,'notes',id),{
+                id, text:txt, day:parseInt(d), month:parseInt(m),
+                year: yearVal, annual:ann, savedAt:new Date().toISOString()
+            }); 
+            closeModals(); 
+        } catch(e){alert(e.message)}
     };
 
+    // --- ĐÃ SỬA PHẦN NÀY ĐỂ KHÔNG BỊ "NULL" ---
     document.getElementById('btnViewAllNotes').onclick = () => {
         const c = document.getElementById('notesListContainer'); c.innerHTML='';
         if(!currentUser) return c.innerHTML='<div style="padding:20px;text-align:center">Đăng nhập để xem.</div>', document.getElementById('listModal').style.display='flex';
         if(notesMap.size===0) c.innerHTML='<div style="padding:20px;text-align:center">Chưa có ghi chú nào.</div>';
+        
         notesMap.forEach(n=>{
             const div=document.createElement('div'); div.className='list-item';
-            div.innerHTML=`<div><div class="list-date">${pad(n.day)}/${pad(n.month)} Âm ${n.annual?'(Lặp)':'/ '+n.year}</div><div>${n.text}</div></div><button class="danger btn-icon" onclick="window.delNote('${n.id}')">🗑</button>`;
+            
+            // LOGIC HIỂN THỊ NĂM MỚI:
+            let timeInfo = '';
+            if(n.annual) timeInfo = ' (Lặp hàng năm)';
+            else if(n.year) timeInfo = ' / ' + n.year;
+            // Nếu không có năm và không lặp thì không hiện gì cả
+
+            div.innerHTML=`
+                <div>
+                    <div class="list-date">${pad(n.day)}/${pad(n.month)} Âm ${timeInfo}</div>
+                    <div style="margin-top:4px;color:#334155">${n.text}</div>
+                </div>
+                <button class="danger btn-icon" onclick="window.delNote('${n.id}')">🗑</button>
+            `;
             c.appendChild(div);
         });
         document.getElementById('listModal').style.display='flex';
     };
+
     window.delNote = async (id) => { if(confirm('Xoá nhé?')) await deleteDoc(doc(db,'users',currentUser.uid,'notes',id)); document.getElementById('listModal').style.display='none'; }
     document.getElementById('btnOpenAddFromList').onclick = () => { if(!currentUser)return loginModal.style.display='flex'; closeModals(); document.getElementById('popupDay').value='';document.getElementById('popupText').value=''; document.getElementById('noteModal').style.display='flex'; }
 
@@ -318,7 +344,7 @@
         }
     });
 
-    // EVENTS
+    // EVENTS KHÁC
     document.getElementById('prevMonth').onclick=()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--}renderCalendar()};
     document.getElementById('nextMonth').onclick=()=>{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++}renderCalendar()};
     document.getElementById('btnJumpToday').onclick=()=>{const n=new Date();viewMonth=n.getMonth();viewYear=n.getFullYear();selectedDate=n;renderCalendar()};
