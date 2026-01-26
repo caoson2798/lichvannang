@@ -4,43 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Lịch Âm Dương (Google Login)</title>
+  <title>Lịch Âm Dương (Fix Time)</title>
+  
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="icon" type="image/png" href="logo.png">
 
   <style>
-    :root{
-        --bg: #f1f5f9; --card: #ffffff; --text: #334155; --muted: #94a3b8;
-        --accent: #2563eb; --border: #e2e8f0; --danger: #ef4444;
-    }
+    /* CSS GỐC */
+    :root{ --bg:#f1f5f9; --card:#ffffff; --text:#334155; --muted:#94a3b8; --accent:#2563eb; --border:#e2e8f0; --danger:#ef4444; }
     *{box-sizing:border-box}
-    body{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin:0; background:var(--bg); color:var(--text); min-height:100vh; display:flex; justify-content:center; padding:20px}
-    .app{width:100%; max-width:800px}
-    
-    /* Header & Logo */
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:0;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:20px}
+    .app{width:100%;max-width:800px}
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-    .header-left{display:flex; gap:12px; align-items:center}
-    .logo-img{width:50px; height:50px; object-fit:cover; border-radius:50%; border:2px solid var(--accent); box-shadow:0 2px 5px rgba(0,0,0,0.1)}
-    
+    .header-left{display:flex;gap:12px;align-items:center}
+    .logo-img{width:50px;height:50px;object-fit:cover;border-radius:50%;border:2px solid var(--accent);box-shadow:0 2px 5px rgba(0,0,0,0.1)}
     h1{font-size:22px;margin:0;font-weight:700;color:#1e293b}
     .auth-pill{display:flex;gap:8px;align-items:center}
-    
-    /* Buttons */
-    button{background:var(--accent);border:none;padding:8px 16px;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-size:14px;transition:0.2s; box-shadow: 0 2px 4px rgba(37,99,235,0.2)}
+    button{background:var(--accent);border:none;padding:8px 16px;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-size:14px;transition:0.2s;box-shadow:0 2px 4px rgba(37,99,235,0.2)}
     button:hover{filter:brightness(1.1)}
-    .ghost{background:white; border:1px solid var(--border); color:var(--text); box-shadow:none}
+    .ghost{background:white;border:1px solid var(--border);color:var(--text);box-shadow:none}
     .ghost:hover{background:var(--bg)}
-    .danger{background:white; color:var(--danger); border:1px solid #fecaca; box-shadow:none}
+    .danger{background:white;color:var(--danger);border:1px solid #fecaca;box-shadow:none}
     .btn-icon{padding:8px 10px}
-
-    /* Google Button */
-    .btn-google{
-        background:white; color:#333; border:1px solid #ddd; width:100%; 
-        display:flex; align-items:center; justify-content:center; gap:10px; padding:12px;
-        font-size:15px; font-weight:600; box-shadow:0 2px 4px rgba(0,0,0,0.05);
-    }
-    .btn-google:hover{background:#f8f9fa; border-color:#ccc}
-    .google-icon{width:20px; height:20px}
-
-    /* Calendar & UI Elements (Giữ nguyên) */
+    .btn-google{background:white;color:#333;border:1px solid #ddd;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;font-size:15px;font-weight:600;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+    .btn-google:hover{background:#f8f9fa;border-color:#ccc}
+    .google-icon{width:20px;height:20px}
     .calendar-ctrl{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
     .calendar-title{font-size:18px;font-weight:700;color:var(--accent)}
     .grid-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px;text-align:center;font-weight:600;color:var(--muted);font-size:13px}
@@ -63,15 +51,25 @@
     .tab{padding:6px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted)}
     .tab.active{background:white;color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,0.1)}
     
-    /* Modals */
     .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:999;padding:15px}
     .modal{background:white;width:100%;max-width:400px;border-radius:16px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);animation:popUp 0.2s ease-out}
     .modal h3{margin:0 0 15px 0;font-size:20px;color:var(--text);text-align:center}
     .modal-body{display:flex;flex-direction:column;gap:12px}
-    .list-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border)}
+
+    /* CSS LIST */
+    .list-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9}
     .list-item:last-child{border-bottom:none}
-    .list-date{font-weight:700;font-size:14px;color:var(--accent)}
-    
+    .section-header{background:#f8fafc;color:#64748b;font-weight:700;font-size:13px;padding:8px 12px;border-radius:6px;margin-top:15px;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px}
+    .date-box{display:flex;flex-direction:column}
+    .solar-big{font-size:16px;font-weight:700;color:var(--accent)}
+    .lunar-small{font-size:12px;color:#94a3b8;font-weight:500}
+    .note-content{color:#334155;font-size:14px;margin-top:2px}
+
+    /* CSS POPUP MỚI */
+    .input-group label { font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: block; }
+    .solar-input { font-size: 18px; font-weight: 700; color: #1e293b; border: 2px solid var(--accent); }
+    .lunar-preview { font-size: 14px; color: #64748b; background: #f1f5f9; padding: 10px; border-radius: 8px; margin-top: -5px; border: 1px dashed #cbd5e1; }
+
     @keyframes popUp{from{transform:scale(0.95);opacity:0}to{transform:scale(1);opacity:1}}
     @media (max-width:600px){.controls-bar{flex-direction:column}}
   </style>
@@ -137,16 +135,9 @@
     <div class="modal">
         <h3>Đăng nhập</h3>
         <div class="modal-body" style="text-align:center">
-            <p style="color:var(--muted);font-size:14px;margin:0 0 10px 0">
-                Đăng nhập để đồng bộ ghi chú trên mọi thiết bị.
-            </p>
+            <p style="color:var(--muted);font-size:14px;margin:0 0 10px 0">Đăng nhập để đồng bộ ghi chú.</p>
             <button id="btnGoogleLogin" class="btn-google">
-                <svg class="google-icon" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                </svg>
+                <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path></svg>
                 Tiếp tục với Google
             </button>
             <div style="margin-top:15px;font-size:13px;color:var(--muted);cursor:pointer" onclick="closeModals()">Đóng</div>
@@ -158,11 +149,23 @@
       <div class="modal">
           <h3>✍️ Viết ghi chú</h3>
           <div class="modal-body">
-              <div class="row">
-                  <div style="flex:1"><label style="font-size:12px;font-weight:600">Ngày Âm</label><input type="text" id="popupDay" class="date-mask-short" placeholder="dd/mm"></div>
-                  <div style="flex:1"><label style="font-size:12px;font-weight:600">Năm (Tuỳ chọn)</label><input type="number" id="popupYear" placeholder="yyyy"></div>
+              <div class="input-group">
+                  <label>Ngày Dương (Nhập vào đây)</label>
+                  <input type="text" id="popupSolarDate" class="date-mask solar-input" placeholder="dd/mm/yyyy" inputmode="numeric">
               </div>
-              <label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="popupAnnual" style="width:auto"> Lặp lại hàng năm</label>
+              
+              <div class="lunar-preview" id="popupLunarPreview">
+                  Âm lịch: ...
+              </div>
+              
+              <div style="display:none">
+                  <input type="text" id="popupDay"><input type="number" id="popupYear">
+              </div>
+
+              <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:5px">
+                  <input type="checkbox" id="popupAnnual" style="width:auto"> Lặp lại hàng năm (Giỗ, Sinh nhật)
+              </label>
+              
               <textarea id="popupText" rows="4" placeholder="Nội dung ghi chú..."></textarea>
               <div class="row" style="margin-top:10px">
                   <button id="btnSaveNote" style="flex:1">Lưu</button>
@@ -178,19 +181,16 @@
               <h3>Danh sách ghi chú</h3>
               <button onclick="closeModals()" class="ghost" style="padding:4px 8px">✕</button>
           </div>
-          <div style="overflow-y:auto;flex:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border)" id="notesListContainer"></div>
+          <div style="overflow-y:auto;flex:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0 5px" id="notesListContainer"></div>
           <div style="margin-top:15px;text-align:center"><button id="btnOpenAddFromList" class="ghost" style="width:100%">+ Thêm thủ công</button></div>
       </div>
   </div>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } 
-        from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
-    import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } 
-        from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js';
+    import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-    // --- CẤU HÌNH FIREBASE CỦA MÀY ---
     const firebaseConfig = {
       apiKey: "AIzaSyDtBHNripkXGG__LgW16VO0bKCayxzVarE",
       authDomain: "ghichulich.firebaseapp.com",
@@ -205,12 +205,11 @@
     const db = getFirestore(app);
     const googleProvider = new GoogleAuthProvider();
 
-    // STATE
     let currentUser = null;
     let notesMap = new Map();
     let viewMonth = new Date().getMonth(), viewYear = new Date().getFullYear(), selectedDate = new Date(); 
 
-    // HELPERS
+    // HELPERS LỊCH
     function pad(n){return n.toString().padStart(2,'0')}
     function jdFromDate(dd,mm,yy){var a=Math.floor((14-mm)/12);var y=yy+4800-a;var m=mm+12*a-3;var jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;if(jd<2299161)jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-32083;return jd}
     function jdToDate(jd){var a,b,c,d,e,m;if(jd>2299160){a=jd+32044;b=Math.floor((4*a+3)/146097);c=a-Math.floor((b*146097)/4)}else{b=0;c=jd+32082}d=Math.floor((4*c+3)/1461);e=c-Math.floor((1461*d)/4);m=Math.floor((5*e+2)/153);var day=e-Math.floor((153*m+2)/5)+1;var month=m+3-12*Math.floor(m/10);var year=b*100+d-4800+Math.floor(m/10);return[day,month,year]}
@@ -221,11 +220,44 @@
     function convertSolar2Lunar(dd,mm,yy,timeZone){var dayNumber=jdFromDate(dd,mm,yy);var k=Math.floor((dayNumber-2415021.076998695)/29.530588853);var monthStart=getNewMoonDay(k+1,timeZone);if(monthStart>dayNumber)monthStart=getNewMoonDay(k,timeZone);var a11=getLunarMonth11(yy,timeZone),b11=a11,lunarYear;if(a11>=monthStart){lunarYear=yy;a11=getLunarMonth11(yy-1,timeZone)}else{lunarYear=yy+1;b11=getLunarMonth11(yy+1,timeZone)}var lunarDay=dayNumber-monthStart+1;var diff=Math.floor((monthStart-a11)/29);var lunarMonth=diff+11;var lunarLeap=0;if(b11-a11>365){var leapMonthDiff=getLeapMonthOffset(a11,timeZone);if(diff>=leapMonthDiff){lunarMonth=diff+10;if(diff===leapMonthDiff)lunarLeap=1}}if(lunarMonth>12)lunarMonth-=12;if(lunarMonth>=11&&diff<4)lunarYear-=1;return{day:lunarDay,month:lunarMonth,year:lunarYear,leap:lunarLeap}}
     function convertLunar2Solar(lunarDay,lunarMonth,lunarYear,lunarLeap,timeZone){try{var a11=getLunarMonth11(lunarYear,timeZone);var b11=getLunarMonth11(lunarYear+1,timeZone);var off=lunarMonth-11;if(off<0)off+=12;var k=Math.floor(0.5+(a11-2415021.076998695)/29.530588853);var monthStart=getNewMoonDay(k+off,timeZone);if(b11-a11>365){var leapOff=getLeapMonthOffset(a11,timeZone);var leapMonth=leapOff-2;if(leapMonth<0)leapMonth+=12;if(lunarLeap!==0&&lunarMonth!==leapMonth)return null;if(lunarLeap!==0||off>=leapOff)monthStart=getNewMoonDay(k+off+1,timeZone)}var jd=monthStart+lunarDay-1;return jdToDate(jd)}catch(e){return null}}
 
-    // MASK INPUTS (Tự động thêm dấu /)
     document.querySelectorAll('.date-mask').forEach(i=>i.addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);if(v.length>=5)e.target.value=`${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4)}`;else if(v.length>=3)e.target.value=`${v.slice(0,2)}/${v.slice(2)}`;else e.target.value=v}));
-    document.querySelectorAll('.date-mask-short').forEach(i=>i.addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,4);if(v.length>=3)e.target.value=`${v.slice(0,2)}/${v.slice(2)}`;else e.target.value=v}));
+    
+    // --- XỬ LÝ DỮ LIỆU ---
+    function processNoteData(note) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const currentSolarYear = today.getFullYear();
+        let nextSolarDate = null;
 
-    // RENDER CALENDAR
+        if (note.annual) {
+            // FIX LOGIC: Kiểm tra cả năm trước vì có thể cuối năm âm lịch rơi vào đầu năm dương lịch sau
+            // Quét từ năm hiện tại - 1 đến năm hiện tại + 1
+            for (let y = currentSolarYear - 1; y <= currentSolarYear + 1; y++) {
+                let sol = convertLunar2Solar(note.day, note.month, y, 0, 7);
+                if (sol) {
+                    let d = new Date(sol[2], sol[1]-1, sol[0]);
+                    // Lấy ngày gần nhất trong tương lai (hoặc hôm nay)
+                    if (d >= today) {
+                        if (!nextSolarDate || d < nextSolarDate) {
+                            nextSolarDate = d;
+                        }
+                    }
+                }
+            }
+        } else {
+            const y = note.year ? parseInt(note.year) : currentSolarYear;
+            const sol = convertLunar2Solar(note.day, note.month, y, 0, 7);
+            if(sol) nextSolarDate = new Date(sol[2], sol[1]-1, sol[0]);
+        }
+
+        let diffTime = Infinity;
+        if (nextSolarDate) diffTime = nextSolarDate.getTime() - today.getTime();
+
+        let shouldDelete = false;
+        if (!note.annual && nextSolarDate && nextSolarDate.getTime() < today.getTime()) shouldDelete = true;
+
+        return { ...note, nextSolarDate, diffTime, shouldDelete };
+    }
+
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
         document.getElementById('calTitle').textContent = `Tháng ${viewMonth + 1} / ${viewYear}`;
@@ -243,108 +275,143 @@
             if(notesMap.has(`Y-${pad(d)}-${pad(lun.month)}-${lun.year}`) || notesMap.has(`AN-${pad(d)}-${pad(lun.month)}`)){
                 const dot=document.createElement('div'); dot.className='has-note-dot'; cell.appendChild(dot);
             }
-            cell.innerHTML += `<div class="solar-num">${d}</div><div class="lunar-info ${lun.day===1||lun.day===15?'special':''}">${lun.day}/${lun.month}${lun.leap?' (N)':''}</div>`;
+            cell.innerHTML += `<div class="solar-num">${d}</div><div class="lunar-info ${lun.day===1||lun.day===15?'special':''}">${lun.day}/${lun.month}${lun.leap?'(N)':''}</div>`;
             cell.onclick = () => { selectedDate = new Date(viewYear, viewMonth, d); renderCalendar(); };
             grid.appendChild(cell);
         }
     }
 
-    // MODAL & AUTH UI
+    // ACTIONS & POPUP LOGIC MỚI
     const loginModal = document.getElementById('loginModal');
     window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-    
-    document.getElementById('btnAuth').onclick = () => {
-        if(currentUser) signOut(auth);
-        else loginModal.style.display = 'flex';
-    };
+    document.getElementById('btnAuth').onclick = () => { if(currentUser) signOut(auth); else loginModal.style.display = 'flex'; };
+    document.getElementById('btnGoogleLogin').onclick = async () => { try { await signInWithPopup(auth, googleProvider); closeModals(); } catch (e) { alert(e.message); } };
 
-    // GOOGLE SIGN IN
-    document.getElementById('btnGoogleLogin').onclick = async () => {
-        try {
-            await signInWithPopup(auth, googleProvider);
-            closeModals();
-        } catch (error) {
-            alert('Lỗi đăng nhập: ' + error.message);
+    // Khi nhập ngày Dương -> Tự tính ngày Âm
+    document.getElementById('popupSolarDate').addEventListener('input', function() {
+        const v = this.value;
+        if(v.length === 10) {
+            const [d,m,y] = v.split('/').map(Number);
+            if(d && m && y) {
+                const lun = convertSolar2Lunar(d,m,y,7);
+                document.getElementById('popupLunarPreview').textContent = `Âm lịch tương ứng: ${pad(lun.day)}/${pad(lun.month)}/${lun.year}`;
+                // Cập nhật giá trị ẩn để lưu
+                document.getElementById('popupDay').value = `${pad(lun.day)}/${pad(lun.month)}`;
+                document.getElementById('popupYear').value = lun.year;
+            } else {
+                document.getElementById('popupLunarPreview').textContent = "Ngày không hợp lệ";
+            }
+        } else {
+            document.getElementById('popupLunarPreview').textContent = "Đang nhập...";
         }
-    };
+    });
 
-    // NOTE LOGIC
     document.getElementById('btnAddNote').onclick = () => {
         if(!currentUser) { loginModal.style.display='flex'; return; }
-        const lun = convertSolar2Lunar(selectedDate.getDate(), selectedDate.getMonth()+1, selectedDate.getFullYear(), 7);
+        
+        // Mặc định lấy ngày đang chọn ở lịch
+        const sD = selectedDate.getDate(), sM = selectedDate.getMonth()+1, sY = selectedDate.getFullYear();
+        document.getElementById('popupSolarDate').value = `${pad(sD)}/${pad(sM)}/${sY}`;
+        
+        // Trigger tính âm lịch luôn
+        const lun = convertSolar2Lunar(sD, sM, sY, 7);
+        document.getElementById('popupLunarPreview').textContent = `Âm lịch tương ứng: ${pad(lun.day)}/${pad(lun.month)}/${lun.year}`;
         document.getElementById('popupDay').value = `${pad(lun.day)}/${pad(lun.month)}`;
-        document.getElementById('popupYear').value = '';
+        document.getElementById('popupYear').value = lun.year;
+        
         document.getElementById('popupAnnual').checked = false;
         document.getElementById('popupText').value = '';
-        const idY = `Y-${pad(lun.day)}-${pad(lun.month)}-${lun.year}`, idAn = `AN-${pad(lun.day)}-${pad(lun.month)}`;
+        
+        // Load note cũ (nếu có)
+        const idY = `Y-${pad(lun.day)}-${pad(lun.month)}-${lun.year}`;
+        const idAn = `AN-${pad(lun.day)}-${pad(lun.month)}`;
         const exist = notesMap.get(idY) || notesMap.get(idAn);
-        if(exist){ document.getElementById('popupText').value = exist.text; if(exist.year)document.getElementById('popupYear').value=exist.year; if(exist.annual)document.getElementById('popupAnnual').checked=true; }
+        if(exist){
+             document.getElementById('popupText').value = exist.text;
+             if(exist.annual) document.getElementById('popupAnnual').checked = true;
+        }
         document.getElementById('noteModal').style.display = 'flex';
     };
 
     document.getElementById('btnSaveNote').onclick = async () => {
         const dStr=document.getElementById('popupDay').value, yStr=document.getElementById('popupYear').value, txt=document.getElementById('popupText').value, ann=document.getElementById('popupAnnual').checked;
         const [d,m] = dStr.split('/');
-        if(!d||!m||!txt) return alert('Thiếu ngày hoặc nội dung');
-        let id = `D-${d}-${m}`; if(ann)id=`AN-${d}-${m}`; else if(yStr)id=`Y-${d}-${m}-${yStr}`;
+        if(!d||!m||!txt) return alert('Vui lòng nhập ngày dương và nội dung');
         
-        // Fix: Lưu year là null nếu không nhập, để hiển thị không bị lỗi
-        const yearVal = yStr ? yStr : null;
-
+        let id = `D-${d}-${m}`; if(ann) id=`AN-${d}-${m}`; else if(yStr) id=`Y-${d}-${m}-${yStr}`; 
+        const yearVal = yStr ? yStr : new Date().getFullYear();
+        
         try{ 
             await setDoc(doc(db,'users',currentUser.uid,'notes',id),{
-                id, text:txt, day:parseInt(d), month:parseInt(m),
-                year: yearVal, annual:ann, savedAt:new Date().toISOString()
+                id, text:txt, day:parseInt(d), month:parseInt(m), year: yearVal, annual:ann, savedAt:new Date().toISOString()
             }); 
             closeModals(); 
         } catch(e){alert(e.message)}
     };
 
-    // --- ĐÃ SỬA PHẦN NÀY ĐỂ KHÔNG BỊ "NULL" ---
     document.getElementById('btnViewAllNotes').onclick = () => {
-        const c = document.getElementById('notesListContainer'); c.innerHTML='';
-        if(!currentUser) return c.innerHTML='<div style="padding:20px;text-align:center">Đăng nhập để xem.</div>', document.getElementById('listModal').style.display='flex';
-        if(notesMap.size===0) c.innerHTML='<div style="padding:20px;text-align:center">Chưa có ghi chú nào.</div>';
+        const container = document.getElementById('notesListContainer'); 
+        container.innerHTML='';
+        if(!currentUser) return container.innerHTML='<div style="padding:20px;text-align:center">Đăng nhập để xem.</div>', document.getElementById('listModal').style.display='flex';
         
-        notesMap.forEach(n=>{
-            const div=document.createElement('div'); div.className='list-item';
-            
-            // LOGIC HIỂN THỊ NĂM MỚI:
-            let timeInfo = '';
-            if(n.annual) timeInfo = ' (Lặp hàng năm)';
-            else if(n.year) timeInfo = ' / ' + n.year;
-            // Nếu không có năm và không lặp thì không hiện gì cả
+        let normalNotes = [], annualNotes = [];
+        notesMap.forEach(note => {
+            let n = processNoteData(note);
+            if(n.shouldDelete) deleteDoc(doc(db, 'users', currentUser.uid, 'notes', n.id));
+            else { if(n.annual) annualNotes.push(n); else normalNotes.push(n); }
+        });
 
+        normalNotes.sort((a,b) => a.diffTime - b.diffTime);
+        annualNotes.sort((a,b) => a.diffTime - b.diffTime);
+
+        const renderItem = (n) => {
+            const div = document.createElement('div'); div.className='list-item';
+            let solarStr = "Không xác định";
+            if(n.nextSolarDate) solarStr = `${pad(n.nextSolarDate.getDate())}/${pad(n.nextSolarDate.getMonth()+1)}/${n.nextSolarDate.getFullYear()}`;
             div.innerHTML=`
-                <div>
-                    <div class="list-date">${pad(n.day)}/${pad(n.month)} Âm ${timeInfo}</div>
-                    <div style="margin-top:4px;color:#334155">${n.text}</div>
+                <div style="flex:1">
+                    <div class="date-box">
+                        <span class="solar-big">${solarStr}</span>
+                        <span class="lunar-small">${pad(n.day)}/${pad(n.month)} Âm</span>
+                    </div>
+                    <div class="note-content">${n.text}</div>
                 </div>
                 <button class="danger btn-icon" onclick="window.delNote('${n.id}')">🗑</button>
             `;
-            c.appendChild(div);
-        });
+            container.appendChild(div);
+        }
+
+        if(normalNotes.length > 0) {
+            const h = document.createElement('div'); h.className='section-header'; h.textContent = "Sự kiện sắp tới";
+            container.appendChild(h); normalNotes.forEach(renderItem);
+        }
+        if(annualNotes.length > 0) {
+            const h = document.createElement('div'); h.className='section-header'; h.textContent = "Sự kiện hàng năm (Giỗ, Sinh nhật)";
+            container.appendChild(h); annualNotes.forEach(renderItem);
+        }
+        if(normalNotes.length===0 && annualNotes.length===0) container.innerHTML='<div style="padding:20px;text-align:center">Chưa có ghi chú nào.</div>';
+
         document.getElementById('listModal').style.display='flex';
     };
 
-    window.delNote = async (id) => { if(confirm('Xoá nhé?')) await deleteDoc(doc(db,'users',currentUser.uid,'notes',id)); document.getElementById('listModal').style.display='none'; }
-    document.getElementById('btnOpenAddFromList').onclick = () => { if(!currentUser)return loginModal.style.display='flex'; closeModals(); document.getElementById('popupDay').value='';document.getElementById('popupText').value=''; document.getElementById('noteModal').style.display='flex'; }
+    window.delNote = async (id) => { if(confirm('Xoá nhé?')) await deleteDoc(doc(db,'users',currentUser.uid,'notes',id)); if(document.getElementById('listModal').style.display === 'flex') document.getElementById('btnViewAllNotes').click(); }
 
-    // AUTH STATE
-    onAuthStateChanged(auth, u => {
-        currentUser = u;
-        const btn = document.getElementById('btnAuth'), st = document.getElementById('authState');
-        if(u){
-            st.style.display='inline'; st.textContent = u.displayName || u.email;
-            btn.textContent = 'Đăng xuất'; btn.classList.add('danger');
-            onSnapshot(collection(db,'users',u.uid,'notes'), s=>{ notesMap.clear(); s.forEach(d=>notesMap.set(d.id,d.data())); renderCalendar(); });
-        } else {
-            st.style.display='none'; btn.textContent = 'Đăng nhập'; btn.classList.remove('danger');
-            notesMap.clear(); renderCalendar();
-        }
-    });
+    function checkAndNotify(notes) {
+        if (!("Notification" in window) || Notification.permission !== "granted") return;
+        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0,0,0,0);
+        let msg = [];
+        notes.forEach(rawNote => {
+            const n = processNoteData(rawNote);
+            if (n.nextSolarDate && !n.shouldDelete) {
+                const nDate = new Date(n.nextSolarDate); nDate.setHours(0,0,0,0);
+                if (nDate.getTime() === tomorrow.getTime()) msg.push(n.text);
+            }
+        });
+        if (msg.length > 0) new Notification("📅 Nhắc nhở mai có việc", { body: msg.join(", "), icon: "logo.png" });
+    }
+    if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission();
 
-    // EVENTS KHÁC
+    document.getElementById('btnOpenAddFromList').onclick = () => { if(!currentUser)return loginModal.style.display='flex'; closeModals(); document.getElementById('btnAddNote').click(); } // Tái sử dụng logic mở popup
     document.getElementById('prevMonth').onclick=()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--}renderCalendar()};
     document.getElementById('nextMonth').onclick=()=>{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++}renderCalendar()};
     document.getElementById('btnJumpToday').onclick=()=>{const n=new Date();viewMonth=n.getMonth();viewYear=n.getFullYear();selectedDate=n;renderCalendar()};
@@ -352,6 +419,21 @@
     document.getElementById('toLunar').onclick=()=>{const v=document.getElementById('solarInput').value,[d,m,y]=v.split('/').map(Number);if(!d)return;const r=convertSolar2Lunar(d,m,y,7);document.getElementById('s2lResult').textContent=`=> ${pad(r.day)}/${pad(r.month)}/${r.year}${r.leap?' (N)':''} AL`};
     document.getElementById('toSolar').onclick=()=>{const v=document.getElementById('lunarInput').value,[d,m,y]=v.split('/').map(Number);if(!d)return;const r=convertLunar2Solar(d,m,y,document.getElementById('isLeap').checked?1:0,7);document.getElementById('l2sResult').textContent=r?`=> ${pad(r[0])}/${pad(r[1])}/${r[2]} DL`:'Không tồn tại'};
 
+    onAuthStateChanged(auth, u => {
+        currentUser = u;
+        const btn = document.getElementById('btnAuth'), st = document.getElementById('authState');
+        if(u){
+            st.style.display='inline'; st.textContent = u.displayName || u.email;
+            btn.textContent = 'Đăng xuất'; btn.classList.add('danger');
+            onSnapshot(collection(db,'users',u.uid,'notes'), s=>{ 
+                notesMap.clear(); s.forEach(d=>notesMap.set(d.id,d.data())); 
+                renderCalendar(); checkAndNotify(Array.from(notesMap.values()));
+            });
+        } else {
+            st.style.display='none'; btn.textContent = 'Đăng nhập'; btn.classList.remove('danger');
+            notesMap.clear(); renderCalendar();
+        }
+    });
     renderCalendar();
   </script>
 </body>
