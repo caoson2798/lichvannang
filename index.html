@@ -13,19 +13,11 @@
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:0;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:15px}
     .app{width:100%;max-width:600px;padding-bottom:50px}
     
-    /* HEADER MỚI */
+    /* HEADER */
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; background: #fff; padding: 10px; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
     .header-left{display:flex;gap:12px;align-items:center}
     
-    /* Logo Style - Chỉnh lại để vừa với logo vàng đen */
-    .logo-img {
-        width: 50px; 
-        height: 50px; 
-        object-fit: contain; /* Giữ nguyên tỷ lệ ảnh */
-        border-radius: 8px; 
-        background: #000; /* Nền đen cho hợp logo */
-    }
-
+    .logo-img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #000; }
     h1{font-size:18px;margin:0;font-weight:800;letter-spacing:-0.5px;color:#1e293b}
     .user-name { font-size:13px; color:var(--accent); font-weight:600; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
@@ -37,7 +29,7 @@
     .danger{background:#fee2e2;color:var(--danger);border:1px solid #fecaca;box-shadow:none}
     .btn-icon{padding:8px 10px;display:flex;align-items:center;justify-content:center}
     
-    /* CARD & CALENDAR */
+    /* CALENDAR */
     .card{background:var(--card);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);border:1px solid var(--border)}
     .calendar-ctrl{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
     .calendar-title{font-size:18px;font-weight:700;color:var(--accent)}
@@ -57,7 +49,7 @@
     .lunar-info{font-size:10px;color:var(--muted);text-align:center;margin-bottom:2px}
     .lunar-info.special{color:#e11d48;font-weight:700}
     
-    /* CONVERTER TABS */
+    /* CONVERTER */
     .converter-tabs{display:flex;gap:5px;margin-bottom:15px;background:#f1f5f9;padding:4px;border-radius:12px}
     .tab-btn{flex:1;border:none;background:transparent;color:#64748b;padding:8px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:none}
     .tab-btn.active{background:#fff;color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,0.1)}
@@ -81,7 +73,6 @@
     <header>
       <div class="header-left">
         <img src="logo.png" alt="Logo" class="logo-img" onerror="this.src='https://placehold.co/50x50/000/FFF?text=CHS'">
-        
         <div>
           <h1>Lịch Âm</h1>
           <div id="headerUserName" class="user-name">Khách</div>
@@ -154,7 +145,6 @@
               <input type="text" id="popupSolarDate" class="date-mask solar-input" placeholder="dd/mm/yyyy" inputmode="numeric">
           </div>
           <div class="lunar-preview" id="popupLunarPreview">...</div>
-          
           <div style="display:none"><input type="text" id="popupDay"><input type="number" id="popupYear"></div>
 
           <label style="display:flex;gap:10px;align-items:center;font-size:14px;padding:10px 0;cursor:pointer">
@@ -293,7 +283,14 @@
             }
 
             cell.innerHTML += `<div class="solar-num">${d}</div><div class="lunar-info ${lun.day===1||lun.day===15?'special':''}">${lun.day}/${lun.month}${lun.leap?'(N)':''}</div>`;
-            cell.onclick = () => { selectedDate = new Date(viewYear, viewMonth, d); renderCalendar(); };
+            
+            // XỬ LÝ CLICK MỚI: BẤM LÀ HIỆN POPUP
+            cell.onclick = () => { 
+                selectedDate = new Date(viewYear, viewMonth, d); 
+                renderCalendar();
+                document.getElementById('btnAddNote').click();
+            };
+
             grid.appendChild(cell);
         }
     }
@@ -414,17 +411,17 @@
         const btn = document.getElementById('btnAuth');
         const headerName = document.getElementById('headerUserName');
         if(u){
-            // HIỂN THỊ TÊN KHI ĐÃ ĐĂNG NHẬP
-            btn.textContent = 'Logout'; 
+            // HIỂN THỊ "Đã đăng nhập" KHI ĐÃ ĐĂNG NHẬP
+            btn.textContent = 'Đã đăng nhập'; 
             btn.classList.add('danger');
-            headerName.textContent = u.displayName || u.email; // Hiện tên hoặc email
+            headerName.textContent = u.displayName || u.email; 
             
             onSnapshot(collection(db,'users',u.uid,'notes'), s=>{ 
                 notesMap.clear(); s.forEach(d=>notesMap.set(d.id,d.data())); 
                 renderCalendar(); checkAndNotify(Array.from(notesMap.values()));
             });
         } else {
-            // HIỂN THỊ "KHÁCH" KHI CHƯA ĐĂNG NHẬP
+            // HIỂN THỊ "Login" KHI CHƯA ĐĂNG NHẬP
             btn.textContent = 'Login'; 
             btn.classList.remove('danger');
             headerName.textContent = 'Khách';
