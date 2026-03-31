@@ -1,8 +1,21 @@
 {
   "name": "Lịch âm dương",
   "short_name": "App",
-  "start_url": "/lichvannang",
+  "description": "Ứng dụng xem lịch âm dương vạn năng",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#ffffff"
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
